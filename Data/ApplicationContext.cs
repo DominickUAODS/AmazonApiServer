@@ -5,7 +5,21 @@ namespace AmazonApiServer.Data
 {
     public class ApplicationContext: DbContext
     {
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ProductDetail> ProductDetailss { get; set; }
+        public DbSet<ProductDisplay> ProductDisplays { get; set; }
+        public DbSet<ProductFeature> ProductFeatures { get; set; }
+        public DbSet<PropertyKey> PropertyKeys { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewImage> ReviewImages { get; set; }
+        public DbSet<ReviewReview> ReviewReviews { get; set; }
+        public DbSet<ReviewTag> ReviewTags { get; set; }
+        public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
             Database.EnsureCreated();
