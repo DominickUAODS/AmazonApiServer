@@ -20,6 +20,7 @@
     <Folder Include="Controllers\" />
     <Folder Include="FormModels\" />
     <Folder Include="Interfaces\" />
+    <Folder Include="Controllers\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 
