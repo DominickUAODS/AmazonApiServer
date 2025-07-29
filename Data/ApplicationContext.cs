@@ -1,19 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Reflection.Emit;
 using AmazonApiServer.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Data
 {
 	public class ApplicationContext : DbContext
 	{
-		public DbSet<User> Users { get; set; }
-		public DbSet<Role> Roles { get; set; }
 		public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
 		{
+			//Database.EnsureDeleted();
 			Database.EnsureCreated();
 		}
+
+		public DbSet<User> Users { get; set; }
+		public DbSet<Role> Roles { get; set; }
+
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			base.OnModelCreating(modelBuilder);
 			modelBuilder.Entity<User>().HasMany(u => u.Wishlist).WithMany(p => p.WishlistedBy); // todo delete wishlist item on user or product delete
 			modelBuilder.Entity<User>().HasMany(e => e.Orders).WithOne(e => e.User).OnDelete(DeleteBehavior.Cascade);
 			modelBuilder.Entity<User>().HasOne(e => e.Role).WithMany(e => e.Users);
@@ -31,6 +34,10 @@ namespace AmazonApiServer.Data
 			modelBuilder.Entity<OrderItem>().HasOne(e => e.Order).WithMany(e => e.OrderItems).OnDelete(DeleteBehavior.Cascade);
 			modelBuilder.Entity<Category>().HasMany(e => e.PropertyKeys).WithOne(e => e.Category).OnDelete(DeleteBehavior.Cascade);
 			modelBuilder.Entity<Role>().HasMany(e => e.Users).WithOne(e => e.Role).OnDelete(DeleteBehavior.NoAction);
+
+			modelBuilder.Entity<User>().Property(e => e.RegistrationDate).HasDefaultValueSql("GETDATE()");
+
+			base.OnModelCreating(modelBuilder);
 		}
 	}
 }

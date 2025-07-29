@@ -9,6 +9,7 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("name")]
         public required string Name { get; set; }
         [JsonPropertyName("users")]
-        public List<User>? Users { get; set; }
+		[JsonIgnore]
+		public List<User>? Users { get; set; }
     }
 }

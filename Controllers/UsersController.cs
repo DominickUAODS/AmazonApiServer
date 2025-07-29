@@ -17,7 +17,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		//[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var users = await _users.GetAllUsersAsync();
@@ -25,7 +25,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpGet("{id}")]
-		[Authorize]
+		//[Authorize]
 		public async Task<IActionResult> GetUserById(Guid id)
 		{
 			var user = await _users.GetUserByIdAsync(id);
@@ -33,7 +33,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPost]
-		[AllowAnonymous]
+		//[AllowAnonymous]
 		public async Task<IActionResult> AddUser(User user)
 		{
 			if (user == null || !ModelState.IsValid)
@@ -44,7 +44,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPut]
-		[Authorize]
+		//[Authorize]
 		public async Task<IActionResult> UpdateUser(User user)
 		{
 			if (user == null || !ModelState.IsValid)
@@ -57,7 +57,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize]
+		//[Authorize]
 		public async Task<IActionResult> DeleteUser(Guid id)
 		{
 			var currentUser = await _users.GetUserByIdAsync(id);
@@ -69,7 +69,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPatch("{id}")]
-		[Authorize]
+		//[Authorize]
 		public async Task<IActionResult> RestoreUser(Guid id)
 		{
 			var currentUser = await _users.GetUserByIdAsync(id);

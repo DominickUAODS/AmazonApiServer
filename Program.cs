@@ -9,7 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationContext>(options =>
 {
 	options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-	new MySqlServerVersion(new Version(8, 0, 36))).LogTo(Console.WriteLine, LogLevel.Information);
+	new MySqlServerVersion(new Version(8, 0, 36)),
+	mysqlOptions =>
+	{
+		mysqlOptions.EnableRetryOnFailure();
+	})
+	.LogTo(Console.WriteLine, LogLevel.Information)
+	.EnableSensitiveDataLogging()
+	.EnableDetailedErrors();
 });
 
 builder.Services.AddCors(options => options.AddPolicy("corspolicy", build =>

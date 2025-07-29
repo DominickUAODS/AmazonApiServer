@@ -16,12 +16,12 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<IEnumerable<User>> GetAllUsersAsync()
 		{
-			return await _context.Users.ToListAsync();
+			return await _context.Users.Include(u => u.Role).ToListAsync();
 		}
 
 		public async Task<User?> GetUserByIdAsync(Guid id)
 		{
-			return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+			return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
 		}
 
 		public async Task<bool> MarkDeleteUserAsync(Guid id)
