@@ -1,4 +1,4 @@
-﻿using AmazonApiServer.Models;
+﻿using AmazonApiServer.Attributes;
 using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.Dto
@@ -15,5 +15,8 @@ namespace AmazonApiServer.Dto
         public int? Discount { get; set; }
         [JsonPropertyName("number")]
         public int Number { get; set; }
+        [JsonPropertyName("displays")]
+        [FileExtensions("jpg")]
+        public required IFormFileCollection Displays { get; set; }
     }
 }

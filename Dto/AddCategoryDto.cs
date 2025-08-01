@@ -1,13 +1,13 @@
-﻿using AmazonApiServer.Enums;
+﻿using AmazonApiServer.Attributes;
+using AmazonApiServer.Enums;
 using System.Text.Json.Serialization;
-using System.ComponentModel.DataAnnotations;
 
 namespace AmazonApiServer.Dto
 {
     public class AddCategoryDto
     {
         [JsonPropertyName("image")]
-        [FileExtensions(Extensions = "jpg")]
+        [FileExtensions("jpg")]
         public required IFormFile Image { get; set; }
         [JsonPropertyName("icon")]
         public CategoryIcon Icon { get; set; }

@@ -53,7 +53,7 @@ namespace AmazonApiServer.Controllers
                 await _imageService.DeleteAsync(category.Image);
                 return Problem(ex.Message);
             }
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]

@@ -20,15 +20,13 @@ namespace AmazonApiServer.Services
             string publicId = GetPublicIdFromUrl(url);
             DeletionParams deletionParams = new(publicId);
             DeletionResult result = await cloudinary.DestroyAsync(deletionParams);
-            return result.Result == "ok" || result.Result == "deleted";
+            Console.WriteLine(result.Result);
+            return result.Result == "ok";
         }
 
         private static string GetPublicIdFromUrl(string url)
         {
-            Uri uri = new(url);
-            string[] pathSegments = uri.AbsolutePath.Split('/');
-            string publicIdWithExtension = string.Join('/', pathSegments.Skip(4));
-            return Path.Combine(Path.GetDirectoryName(publicIdWithExtension) ?? "", Path.GetFileNameWithoutExtension(publicIdWithExtension)).Replace("\\", "/");
+            return Path.GetFileNameWithoutExtension(url);
         }
     }
 }

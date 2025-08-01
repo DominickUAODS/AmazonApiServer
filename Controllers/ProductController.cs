@@ -1,7 +1,6 @@
 ﻿using AmazonApiServer.Dto;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
-using AmazonApiServer.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AmazonApiServer.Controllers
@@ -33,6 +32,7 @@ namespace AmazonApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
+            // todo add image displays
             Product product = new()
             {
                 Code = productDto.Code,
@@ -50,7 +50,7 @@ namespace AmazonApiServer.Controllers
             {
                 return Problem(ex.Message);
             }
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]
@@ -78,6 +78,7 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
+            // todo delete old images
             return Ok(result);
         }
 
@@ -97,6 +98,7 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
+            // todo delete image
             return Ok(deleted);
         }
     }
