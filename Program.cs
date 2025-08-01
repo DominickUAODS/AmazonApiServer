@@ -1,5 +1,8 @@
-using AmazonApiServer.Data;
 using Microsoft.EntityFrameworkCore;
+using AmazonApiServer.Data;
+using AmazonApiServer.Interfaces;
+using AmazonApiServer.Repositories;
+using AmazonApiServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,9 @@ builder.Services.AddDbContext<ApplicationContext>(
     ).LogTo(Console.WriteLine, LogLevel.Information)
 );
 
+builder.Services.AddScoped<ICategoryRepo, CategoryRepository>();
+builder.Services.AddSingleton<IImageService, ImageService>();
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -18,9 +24,9 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+    ApplicationContext dbContext = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
     dbContext.Database.Migrate();
 }
 

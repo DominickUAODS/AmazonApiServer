@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using AmazonApiServer.Enums;
+using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.Models
 {
@@ -9,6 +10,6 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("review")]
         public Review? Review { get; set; }
         [JsonPropertyName("tag")]
-        public Enums.ReviewTag Tag { get; set; }
+        public ProductReviewTag Tag { get; set; }
     }
 }

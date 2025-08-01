@@ -1,14 +1,14 @@
 ﻿using AmazonApiServer.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace AmazonApiServer.Models
+namespace AmazonApiServer.Dto
 {
-    public class Category
+    public class EditCategoryDto
     {
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
         [JsonPropertyName("image")]
-        public required string Image { get; set; }
+        [FileExtensions(Extensions = "jpg")]
+        public required IFormFile Image { get; set; }
         [JsonPropertyName("icon")]
         public CategoryIcon Icon { get; set; }
         [JsonPropertyName("name")]
@@ -20,13 +20,5 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("parent_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? ParentId { get; set; }
-        [JsonIgnore]
-        public Category? Parent { get; set; }
-        [JsonIgnore]
-        public List<Category>? Children { get; set; }
-        [JsonIgnore]
-        public List<Product>? Products { get; set; }
-        [JsonIgnore]
-        public List<PropertyKey>? PropertyKeys { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using AmazonApiServer.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AmazonApiServer.Data
 {
@@ -43,6 +44,7 @@ namespace AmazonApiServer.Data
             modelBuilder.Entity<Product>().HasMany(e => e.OrderItems).WithOne(e => e.Product).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<OrderItem>().HasOne(e => e.Order).WithMany(e => e.OrderItems).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<Category>().HasMany(e => e.PropertyKeys).WithOne(e => e.Category).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Category>().HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
