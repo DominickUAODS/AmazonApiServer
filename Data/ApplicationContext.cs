@@ -1,5 +1,4 @@
-﻿using System.Reflection.Emit;
-using AmazonApiServer.Models;
+﻿using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Data
@@ -14,6 +13,11 @@ namespace AmazonApiServer.Data
 
 		public DbSet<User> Users { get; set; }
 		public DbSet<Role> Roles { get; set; }
+		public DbSet<Order> Orders { get; set; }
+		public DbSet<Review> Reviews { get; set; }
+		public DbSet<ReviewReview> ReviewReviews { get; set; }
+		public DbSet<RefreshToken> RefreshTokens { get; set; }
+		public DbSet<EmailVerificationCode> EmailVerificationCodes { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

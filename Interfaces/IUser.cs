@@ -1,14 +1,16 @@
-﻿using AmazonApiServer.Models;
+﻿using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Models;
 
 namespace AmazonApiServer.Interfaces
 {
 	public interface IUser
 	{
-		Task<IEnumerable<User>> GetAllUsersAsync();
-		Task<User?> GetUserByIdAsync(Guid id);
-		Task<bool> MarkDeleteUserAsync(Guid id);
-		Task<bool> MarkUnDeleteUserAsync(Guid id);
-		Task<bool> AddUserAsync(User user);
-		Task<bool> UpdateUserAsync(User user, Guid currentUserId);
+		Task<IEnumerable<UserDto>> GetAllUsersAsync();
+		Task<UserDto?> GetUserByIdAsync(Guid id);
+		Task<UserDto?> AddUserAsync(UserCreateDto dto);
+		Task<UserDto?> UpdateUserAsync(UserUpdateDto dto, Guid currentUserId);
+		Task<UserDto?> MarkDeleteUserAsync(Guid id);
+		Task<UserDto?> MarkUnDeleteUserAsync(Guid id);
+		Task<UserDto?> ToggleRoleAsync(Guid id);
 	}
 }

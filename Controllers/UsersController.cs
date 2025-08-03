@@ -1,5 +1,5 @@
-﻿using AmazonApiServer.Interfaces;
-using AmazonApiServer.Models;
+﻿using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,15 +17,15 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpGet]
-		//[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> GetAllUsers()
 		{
-			var users = await _users.GetAllUsersAsync();
-			return Ok(users);
+			var result = await _users.GetAllUsersAsync();
+			return Ok(result);
 		}
 
 		[HttpGet("{id}")]
-		//[Authorize]
+		[Authorize]
 		public async Task<IActionResult> GetUserById(Guid id)
 		{
 			var user = await _users.GetUserByIdAsync(id);
@@ -33,51 +33,55 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPost]
-		//[AllowAnonymous]
-		public async Task<IActionResult> AddUser(User user)
+		[Authorize]
+		public async Task<IActionResult> AddUser(UserCreateDto dto)
 		{
-			if (user == null || !ModelState.IsValid)
+			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			var result = await _users.AddUserAsync(user);
-			return result ? Ok(user) : StatusCode(500, new { error = "Could not add user" });
+			var result = await _users.AddUserAsync(dto);
+			return result is null
+				? StatusCode(500, new { error = "Could not add user" })
+				: CreatedAtAction(nameof(GetUserById), new { id = result.id }, result);
 		}
 
 		[HttpPut]
-		//[Authorize]
-		public async Task<IActionResult> UpdateUser(User user)
+		[Authorize]
+		public async Task<IActionResult> UpdateUser(UserUpdateDto dto)
 		{
-			if (user == null || !ModelState.IsValid)
+			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			var currentUserId = user.Id;
-			var success = await _users.UpdateUserAsync(user, currentUserId);
+			var currentUserId = dto.id;
+			var result = await _users.UpdateUserAsync(dto, currentUserId);
 
-			return success ? Ok(user) : StatusCode(500, new { error = "Unexpected server error occurred" });
+			return result == null
+				? StatusCode(403, new { error = "Permission denied or user not found" })
+				: Ok(result);
 		}
 
 		[HttpDelete("{id}")]
-		//[Authorize]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> DeleteUser(Guid id)
 		{
-			var currentUser = await _users.GetUserByIdAsync(id);
-			if (currentUser == null)
-				return NotFound();
-
-			var success = await _users.MarkDeleteUserAsync(id);
-			return success ? Ok() : StatusCode(500, new { error = "Unexpected server error occurred" });
+			var result = await _users.MarkDeleteUserAsync(id);
+			return result == null ? NotFound() : Ok(result);
 		}
 
-		[HttpPatch("{id}")]
-		//[Authorize]
+		[HttpPatch("{id}/restore")]
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> RestoreUser(Guid id)
 		{
-			var currentUser = await _users.GetUserByIdAsync(id);
-			if (currentUser == null)
-				return NotFound();
+			var result = await _users.MarkUnDeleteUserAsync(id);
+			return result == null ? NotFound() : Ok(result);
+		}
 
-			var success = await _users.MarkDeleteUserAsync(id);
-			return success ? Ok() : StatusCode(500, new { error = "Unexpected server error occurred" });
+		[HttpPatch("{id}/toggle-role")]
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> ToggleRole(Guid id)
+		{
+			var result = await _users.ToggleRoleAsync(id);
+			return result == null ? NotFound() : Ok(result);
 		}
 	}
 }

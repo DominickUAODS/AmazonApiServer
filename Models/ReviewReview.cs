@@ -6,9 +6,11 @@ namespace AmazonApiServer.Models
     {
         [JsonPropertyName("id")]
         public Guid Id { get; set; }
-        [JsonPropertyName("review")]
+		public Guid ReviewId { get; set; }
+		[JsonPropertyName("review")]
         public Review? Review { get; set; }
-        [JsonPropertyName("user")]
+		public Guid UserId { get; set; }
+		[JsonPropertyName("user")]
         public User? User { get; set; }
         [JsonPropertyName("is_helpful")]
         public bool IsHelpful { get; set; }

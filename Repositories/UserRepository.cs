@@ -1,6 +1,9 @@
 ﻿using AmazonApiServer.Data;
+using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Extensions;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
+using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Repositories
@@ -14,58 +17,94 @@ namespace AmazonApiServer.Repositories
 			_context = context;
 		}
 
-		public async Task<IEnumerable<User>> GetAllUsersAsync()
+		public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
 		{
-			return await _context.Users.Include(u => u.Role).ToListAsync();
+			var users = await _context.Users
+				.Include(u => u.Role)
+				.Include(u => u.Orders)
+				.Include(u => u.Wishlist)
+				.Include(u => u.Reviews)
+				.Include(u => u.ReviewReviews)
+				.ToListAsync();
+
+			return users.Select(u => u.ToDto());
 		}
 
-		public async Task<User?> GetUserByIdAsync(Guid id)
+		public async Task<UserDto?> GetUserByIdAsync(Guid id)
 		{
-			return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+			var user = await _context.Users
+				.Include(u => u.Role)
+				.Include(u => u.Orders)
+				.Include(u => u.Wishlist)
+				.Include(u => u.Reviews)
+				.Include(u => u.ReviewReviews)
+				.FirstOrDefaultAsync(u => u.Id == id);
+
+			return user?.ToDto();
 		}
 
-		public async Task<bool> MarkDeleteUserAsync(Guid id)
+		public async Task<UserDto?> AddUserAsync(UserCreateDto dto)
 		{
-			var user = await GetUserByIdAsync(id);
-			if (user == null) return false;
+			var role = await _context.Roles.FindAsync(dto.RoleId);
+			if (role == null) return null;
+
+			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
+			var user = dto.ToUser(hashedPassword);
+
+			_context.Users.Add(user);
+			await _context.SaveChangesAsync();
+
+			return user.ToDto();
+		}
+
+		public async Task<UserDto?> UpdateUserAsync(UserUpdateDto dto, Guid currentUserId)
+		{
+			if (dto.id != currentUserId) return null;
+
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.id);
+			if (user == null) return null;
+
+			user.UpdateFromDto(dto);
+			await _context.SaveChangesAsync();
+
+			return user.ToDto();
+		}
+
+		public async Task<UserDto?> MarkDeleteUserAsync(Guid id)
+		{
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null) return null;
 
 			user.IsActive = false;
 			await _context.SaveChangesAsync();
-			return true;
+
+			return user.ToDto();
 		}
 
-		public async Task<bool> MarkUnDeleteUserAsync(Guid id)
+		public async Task<UserDto?> MarkUnDeleteUserAsync(Guid id)
 		{
-			var user = await GetUserByIdAsync(id);
-			if (user == null) return false;
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null) return null;
 
 			user.IsActive = true;
 			await _context.SaveChangesAsync();
-			return true;
+
+			return user.ToDto();
 		}
 
-		public async Task<bool> AddUserAsync(User user)
+		public async Task<UserDto?> ToggleRoleAsync(Guid id)
 		{
-			_context.Users.Add(user);
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+			if (user == null) return null;
+
+			var admin = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+			var customer = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
+			if (admin == null || customer == null) return null;
+
+			user.RoleId = user.Role?.Name == "Admin" ? customer.Id : admin.Id;
 			await _context.SaveChangesAsync();
-			return true;
-		}
 
-		public async Task<bool> UpdateUserAsync(User user, Guid currentUserId)
-		{
-			if (user.Id != currentUserId) return false;
-
-			var currentUser = await GetUserByIdAsync(user.Id);
-			if (currentUser == null) return false;
-
-			currentUser.FirstName = user.FirstName;
-			currentUser.LastName = user.LastName;
-			currentUser.Email = user.Email;
-			currentUser.ProfilePhoto = user.ProfilePhoto;
-			currentUser.Email = user.Email;
-
-			await _context.SaveChangesAsync();
-			return true;
+			return user.ToDto();
 		}
 	}
 }
