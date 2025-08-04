@@ -8,7 +8,9 @@ namespace AmazonApiServer.Models
         public Guid Id { get; set; }
         [JsonPropertyName("code")]
         public required string Code { get; set; }
-        [JsonPropertyName("category")]
+        [JsonPropertyName("category_id")]
+        public Guid? CategoryId { get; set; }
+        [JsonIgnore]
         public Category? Category { get; set; }
         [JsonPropertyName("price")]
         public float Price { get; set; }
@@ -16,17 +18,17 @@ namespace AmazonApiServer.Models
         public int? Discount { get; set; }
         [JsonPropertyName("number")]
         public int Number { get; set; }
-        [JsonPropertyName("wishlisted_by")]
+        [JsonIgnore]
         public List<User>? WishlistedBy { get; set; }
-        [JsonPropertyName("reviews")]
+        [JsonIgnore]
         public List<Review>? Reviews { get; set; }
-        [JsonPropertyName("displays")]
+        [JsonIgnore]
         public List<ProductDisplay>? Displays { get; set; }
-        [JsonPropertyName("details")]
+        [JsonIgnore]
         public List<ProductDetail>? Details { get; set; }
-        [JsonPropertyName("features")]
+        [JsonIgnore]
         public List<ProductFeature>? Features { get; set; }
-        [JsonPropertyName("order_items")]
+        [JsonIgnore]
         public List<OrderItem>? OrderItems { get; set; }
     }
 }

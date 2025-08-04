@@ -2,7 +2,7 @@
 
 namespace AmazonApiServer.Enums
 {
-    public enum ReviewTag
+    public enum ProductReviewTag
     {
         [Display(Name = "Actual price")]
         ACTUAL_PRICE,
