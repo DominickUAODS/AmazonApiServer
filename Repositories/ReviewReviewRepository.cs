@@ -2,6 +2,7 @@
 using AmazonApiServer.DTOs.ReviewReview;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Repositories
 {

@@ -19,7 +19,7 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("content")]
         public required string Content { get; set; }
         [JsonPropertyName("published")]
-        public DateOnly Published { get; set; }
+        public DateTime Published { get; set; }
         [JsonPropertyName("rewiew_reviews")]
         public List<ReviewReview>? ReviewReviews { get; set; }
         [JsonPropertyName("rewiew_tags")]

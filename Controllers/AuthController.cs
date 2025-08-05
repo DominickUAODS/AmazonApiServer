@@ -1,4 +1,5 @@
-﻿using AmazonApiServer.Data;
+﻿using System.IdentityModel.Tokens.Jwt;
+using AmazonApiServer.Data;
 using AmazonApiServer.DTOs.Auth;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
@@ -6,6 +7,7 @@ using AmazonApiServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AmazonApiServer.Controllers
 {
@@ -14,14 +16,16 @@ namespace AmazonApiServer.Controllers
 	public class AuthController : ControllerBase
 	{
 		private readonly ApplicationContext _context;
-		private readonly IToken _token;
+		private readonly IToken _tokenService;
 		private readonly IEmail _emailService;
+		private readonly TokenValidationParameters _validationParameters;
 
-		public AuthController(ApplicationContext context, IToken token, IEmail emailService)
+		public AuthController(ApplicationContext context, IToken token, IEmail emailService, TokenValidationParameters validationParameters)
 		{
 			_context = context;
-			_token = token;
+			_tokenService = token;
 			_emailService = emailService;
+			_validationParameters = validationParameters;
 		}
 
 		[HttpPost("login")]
@@ -36,17 +40,20 @@ namespace AmazonApiServer.Controllers
 			if (user == null || !PasswordHasher.VerifyPassword(dto.Password, user.PasswordHash!))
 				return Unauthorized(new { error = "Invalid credentials" });
 
-			var token = _token.CreateJwtToken(user);
-			return Ok(new
+			var jwt = _tokenService.CreateJwtToken(user);
+			var refreshToken = await _tokenService.CreateRefreshTokenAsync(user.Id);
+
+			return Ok(new AuthResponseDto
 			{
-				token,
-				user = new
+				AccessToken = jwt,
+				RefreshToken = refreshToken,
+				User = new
 				{
-					user.Id,
-					user.FirstName,
-					user.LastName,
-					user.Email,
-					user.Role?.Name
+					id = user.Id,
+					first_name = user.FirstName,
+					last_name = user.LastName,
+					email = user.Email,
+					role = user.Role?.Name
 				}
 			});
 		}
@@ -121,7 +128,7 @@ namespace AmazonApiServer.Controllers
 				LastName = dto.LastName,
 				IsActive = true,
 				ProfilePhoto = "/images/default.png",
-				//RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+				RegistrationDate = DateTime.UtcNow,
 				RoleId = role.Id
 			};
 
@@ -135,29 +142,40 @@ namespace AmazonApiServer.Controllers
 		[HttpPost("refresh")]
 		public async Task<IActionResult> RefreshToken([FromBody] RefreshDto dto)
 		{
-			var token = await _context.RefreshTokens
+			var oldToken = await _context.RefreshTokens
 				.Include(t => t.User)
 				.ThenInclude(u => u.Role)
 				.FirstOrDefaultAsync(t => t.Token == dto.RefreshToken && !t.IsRevoked);
 
-			if (token == null || token.ExpiresAt < DateTime.UtcNow)
+			var handler = new JwtSecurityTokenHandler();
+			var principal = handler.ValidateToken(oldToken?.Token, _validationParameters, out var validatedToken);
+
+			if (!principal.HasClaim(c => c.Type == "tokenType" && c.Value == "refreshToken"))
 				return Unauthorized(new { error = "Invalid or expired refresh token" });
 
-			token.IsRevoked = true;
+			if (oldToken == null || oldToken.ExpiresAt < DateTime.UtcNow)
+				return Unauthorized(new { error = "Invalid or expired refresh token" });
+			
+			oldToken.IsRevoked = true;
 
-			var newToken = new RefreshToken
-			{
-				Id = Guid.NewGuid(),
-				UserId = token.UserId,
-				ExpiresAt = DateTime.UtcNow.AddDays(7),
-				Token = Guid.NewGuid().ToString()
-			};
+			var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.UserId);
+			var jwt = _tokenService.CreateJwtToken(oldToken.User);
 
-			_context.Add(newToken);
 			await _context.SaveChangesAsync();
 
-			var jwt = _token.CreateJwtToken(token.User);
-			return Ok(new { token = jwt, refreshToken = newToken.Token });
+			return Ok(new AuthResponseDto
+			{
+				AccessToken = jwt,
+				RefreshToken = newRefreshToken,
+				User = new
+				{
+					id = oldToken.User.Id,
+					first_name = oldToken.User.FirstName,
+					last_name = oldToken.User.LastName,
+					email = oldToken.User.Email,
+					role = oldToken.User.Role?.Name
+				}
+			});
 		}
 
 		[HttpPost("logout")]
@@ -173,12 +191,13 @@ namespace AmazonApiServer.Controllers
 			await _context.SaveChangesAsync();
 
 			// Удалим токены из cookie
-			Response.Cookies.Delete("jwt_token");
+			Response.Cookies.Delete("access_token");
 			Response.Cookies.Delete("refresh_token");
 
 			return Ok(new { message = "Logged out successfully" });
 		}
 
+		[HttpPost("verify")]
 		public async Task<bool> VerifyConfirmationCodeAsync(string email, string code)
 		{
 			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == email);

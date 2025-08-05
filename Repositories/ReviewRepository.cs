@@ -57,7 +57,7 @@ namespace AmazonApiServer.Repositories
 				Stars = dto.Stars,
 				Title = dto.Title,
 				Content = dto.Content,
-				Published = DateOnly.FromDateTime(DateTime.UtcNow)
+				Published = DateTime.UtcNow
 			};
 
 			_context.Reviews.Add(review);

@@ -39,7 +39,7 @@ namespace AmazonApiServer.DTOs.User
 
 		[Display(Name = "Registration Date")]
 		[DataType(DataType.Date)]
-		public DateOnly registration_date { get; set; }
+		public DateTime registration_date { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public List<OrderDto>? orders { get; set; }

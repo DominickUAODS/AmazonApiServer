@@ -11,7 +11,7 @@ namespace AmazonApiServer.DTOs.Order
 		public string Address { get; set; } = string.Empty;
 		public string PaymentType { get; set; } = string.Empty;
 		public string OrderStatus { get; set; } = string.Empty;
-		public DateOnly OrderedOn { get; set; }
+		public DateTime OrderedOn { get; set; }
 		public List<OrderItemDto> Items { get; set; } = new();
 	}
 }

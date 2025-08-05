@@ -79,7 +79,7 @@ namespace AmazonApiServer.Repositories
 				RecipientsName = dto.RecipientsName,
 				Address = dto.Address,
 				PaymentType = dto.PaymentType,
-				OrderedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+				OrderedOn = DateTime.UtcNow,
 				Status = OrderStatus.RECEIVED,
 				OrderItems = dto.Items.Select(i => new OrderItem
 				{

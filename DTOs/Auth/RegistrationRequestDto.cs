@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.Auth
 {
@@ -6,15 +7,11 @@ namespace AmazonApiServer.DTOs.Auth
 	{
 		[Required]
 		[EmailAddress]
+		[JsonPropertyName("email")]
 		public string Email { get; set; } = string.Empty;
 
 		[Required]
+		[JsonPropertyName("password")]
 		public string Password { get; set; } = string.Empty;
-
-		[Required]
-		public string FirstName { get; set; } = string.Empty;
-
-		[Required]
-		public string LastName { get; set; } = string.Empty;
 	}
 }

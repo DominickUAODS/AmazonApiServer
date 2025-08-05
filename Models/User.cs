@@ -24,7 +24,7 @@ namespace AmazonApiServer.Models
 		[JsonPropertyName("is_active")]
 		public bool IsActive { get; set; }
 		[JsonPropertyName("registration_date")]
-		public DateOnly RegistrationDate { get; set; }
+		public DateTime RegistrationDate { get; set; }
 		[JsonPropertyName("orders")]
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public List<Order>? Orders { get; set; }

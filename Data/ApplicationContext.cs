@@ -49,7 +49,7 @@ namespace AmazonApiServer.Data
 			modelBuilder.Entity<Category>().HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
 			modelBuilder.Entity<Role>().HasMany(e => e.Users).WithOne(e => e.Role).OnDelete(DeleteBehavior.NoAction);
 
-			modelBuilder.Entity<User>().Property(e => e.RegistrationDate).HasDefaultValueSql("GETDATE()");
+			//modelBuilder.Entity<User>().Property(e => e.RegistrationDate).HasDefaultValueSql("CURRENT_DATE()");
 
 			base.OnModelCreating(modelBuilder);
 		}

@@ -13,7 +13,7 @@ namespace AmazonApiServer.Models
 		[JsonPropertyName("order_status")]
 		public OrderStatus Status { get; set; }
 		[JsonPropertyName("ordered_on")]
-		public DateOnly OrderedOn { get; set; }
+		public DateTime OrderedOn { get; set; }
 		[JsonPropertyName("recipients_name")]
 		public required string RecipientsName { get; set; }
 		[JsonPropertyName("address")]

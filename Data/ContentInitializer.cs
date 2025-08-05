@@ -12,7 +12,7 @@ namespace AmazonApiServer.Data
 				await context.Roles.AddRangeAsync
 				(
 						new Role { Id = Guid.NewGuid(), Name = "Admin" },
-						new Role { Id = Guid.NewGuid(), Name = "Cusmomer" }
+						new Role { Id = Guid.NewGuid(), Name = "Customer" }
 				);
 				await context.SaveChangesAsync();
 			}
@@ -32,7 +32,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_1",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2024-01-15")
+						RegistrationDate = DateTime.Parse("2024-01-15")
 					},
 					new User
 					{
@@ -44,7 +44,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_2",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2023-11-20")
+						RegistrationDate = DateTime.Parse("2023-11-20")
 					},
 					new User
 					{
@@ -56,7 +56,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_3",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2024-03-11")
+						RegistrationDate = DateTime.Parse("2024-03-11")
 					},
 					new User
 					{
@@ -68,7 +68,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_4",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateOnly.Parse("2022-12-30")
+						RegistrationDate = DateTime.Parse("2022-12-30")
 					},
 					new User
 					{
@@ -80,7 +80,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_5",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2023-08-01")
+						RegistrationDate = DateTime.Parse("2023-08-01")
 					},
 					new User
 					{
@@ -92,7 +92,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_6",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateOnly.Parse("2024-02-17")
+						RegistrationDate = DateTime.Parse("2024-02-17")
 					},
 					new User
 					{
@@ -104,7 +104,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_7",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2024-04-08")
+						RegistrationDate = DateTime.Parse("2024-04-08")
 					},
 					new User
 					{
@@ -116,7 +116,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_8",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2023-06-25")
+						RegistrationDate = DateTime.Parse("2023-06-25")
 					},
 					new User
 					{
@@ -128,7 +128,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_9",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2024-05-18")
+						RegistrationDate = DateTime.Parse("2024-05-18")
 					},
 					new User
 					{
@@ -140,7 +140,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_10",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateOnly.Parse("2023-01-05")
+						RegistrationDate = DateTime.Parse("2023-01-05")
 					},
 					new User
 					{
@@ -152,7 +152,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_11",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2023-03-15")
+						RegistrationDate = DateTime.Parse("2023-03-15")
 					},
 					new User
 					{
@@ -164,7 +164,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_12",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2022-09-10")
+						RegistrationDate = DateTime.Parse("2022-09-10")
 					},
 					new User
 					{
@@ -176,7 +176,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_13",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2024-06-10")
+						RegistrationDate = DateTime.Parse("2024-06-10")
 					},
 					new User
 					{
@@ -188,7 +188,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_14",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateOnly.Parse("2023-12-01")
+						RegistrationDate = DateTime.Parse("2023-12-01")
 					},
 					new User
 					{
@@ -200,7 +200,7 @@ namespace AmazonApiServer.Data
 						PasswordHash = "hashed_pw_15",
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = false,
-						RegistrationDate = DateOnly.Parse("2024-07-01")
+						RegistrationDate = DateTime.Parse("2024-07-01")
 					}
 				);
 				await context.SaveChangesAsync();

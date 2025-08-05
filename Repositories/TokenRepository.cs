@@ -4,6 +4,7 @@ using System.Text;
 using AmazonApiServer.Data;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 public class TokenRepository : IToken
@@ -20,11 +21,12 @@ public class TokenRepository : IToken
 	public string CreateJwtToken(User user)
 	{
 		var claims = new[]
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-				new Claim(JwtRegisteredClaimNames.Email, user.Email),
-				new Claim(ClaimTypes.Role, user.Role?.Name ?? "Customer")
-			};
+		{
+			new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+			new Claim(JwtRegisteredClaimNames.Email, user.Email),
+			new Claim(ClaimTypes.Role, user.Role?.Name ?? "Customer"),
+			new Claim("tokenType", "accessToken")
+		};
 
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
 		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -40,12 +42,33 @@ public class TokenRepository : IToken
 
 	public async Task<string> CreateRefreshTokenAsync(Guid userId)
 	{
+		var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+		var claims = new[]
+		{
+			new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+			new Claim(JwtRegisteredClaimNames.Email, user.Email),
+			new Claim(ClaimTypes.Role, user.Role?.Name ?? "Customer"),
+			new Claim("tokenType", "refreshToken")
+		};
+
+		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+		var token = new JwtSecurityToken(
+			issuer: _configuration["Jwt:Issuer"],
+			audience: _configuration["Jwt:Audience"],
+			claims: claims,
+			expires: DateTime.UtcNow.AddDays(7),
+			signingCredentials: creds
+		);
+
 		var refreshToken = new RefreshToken
 		{
 			Id = Guid.NewGuid(),
 			UserId = userId,
-			Token = Guid.NewGuid().ToString(),
-			ExpiresAt = DateTime.UtcNow.AddDays(7),
+			Token = new JwtSecurityTokenHandler().WriteToken(token),
+			ExpiresAt = token.ValidTo,
 			IsRevoked = false
 		};
 

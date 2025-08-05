@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using AmazonApiServer.Data;
+using AmazonApiServer.Helpers;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Repositories;
 using AmazonApiServer.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,22 @@ builder.Services.AddScoped<IEmail, EmailRepository>();
 
 builder.Services.AddScoped<ICategoryRepo, CategoryRepository>();
 builder.Services.AddSingleton<IImageService, ImageService>();
+
+var tokenValidationParameters = JwtConfigHelper.GetTokenValidationParameters(builder.Configuration);
+
+builder.Services.AddSingleton(tokenValidationParameters);
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+	options.RequireHttpsMetadata = true;
+	options.SaveToken = true;
+	options.TokenValidationParameters = tokenValidationParameters;
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

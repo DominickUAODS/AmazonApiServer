@@ -7,7 +7,7 @@ namespace AmazonApiServer.Attributes
     {
         private string[] AllowedExtensions { get; set; } = fileExtensions.Split([','], StringSplitOptions.RemoveEmptyEntries);
 
-        public override bool IsValid(object value)
+        public override bool IsValid(object? value)
         {
             if (value is IFormFile file)
             {
