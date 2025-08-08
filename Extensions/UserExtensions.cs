@@ -14,22 +14,22 @@ namespace AmazonApiServer.Extensions
 			return new UserDto
 			{
 				id = user.Id,
-				first_name = user.FirstName,
-				last_name = user.LastName,
-				email = user.Email,
-				profile_photo = user.ProfilePhoto,
-				role = user.Role?.Name ?? "",
-				is_active = user.IsActive,
-				registration_date = user.RegistrationDate,
+				FirstName = user.FirstName,
+				LastName = user.LastName,
+				Email = user.Email,
+				ProfilePhoto = user.ProfilePhoto,
+				Role = user.Role?.Name ?? "Customer",
+				IsActive = user.IsActive,
+				RegistrationDate = user.RegistrationDate,
 
-				orders = user.Orders?.Select(o => new OrderDto { Id = o.Id }).ToList(),
-				wishlist = user.Wishlist?.Select(p => new ProductDto { Id = p.Id }).ToList(),
-				reviews = user.Reviews?.Select(r => new ReviewDto { Id = r.Id }).ToList(),
-				review_reviews = user.ReviewReviews?.Select(r => new ReviewReviewDto { Id = r.Id }).ToList()
+				Orders = user.Orders?.Select(o => new OrderDto { Id = o.Id }).ToList(),
+				WishList = user.Wishlist?.Select(p => new ProductDto { Id = p.Id }).ToList(),
+				Reviews = user.Reviews?.Select(r => new ReviewDto { Id = r.Id }).ToList(),
+				ReviewReviews = user.ReviewReviews?.Select(r => new ReviewReviewDto { Id = r.Id }).ToList()
 			};
 		}
 
-		public static User ToUser(this UserCreateDto dto, string hashedPassword)
+		public static User ToUser(this UserCreateDto dto, string hashedPassword, Guid roleId)
 		{
 			return new User
 			{
@@ -38,26 +38,32 @@ namespace AmazonApiServer.Extensions
 				LastName = dto.LastName,
 				Email = dto.Email,
 				PasswordHash = hashedPassword,
-				RoleId = dto.RoleId,
+				RoleId = roleId,
 				ProfilePhoto = dto.ProfilePhoto ?? "/images/users/default.jpg",
 				IsActive = dto.IsActive
 				//RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow)
 			};
 		}
 
-		public static void UpdateFromDto(this User user, UserUpdateDto dto)
+		public static void UpdateFromDto(this User user, UserUpdateDto dto, Guid roleId)
 		{
-			user.FirstName = dto.first_name;
-			user.LastName = dto.last_name;
-			user.Email = dto.email;
-			user.RoleId = dto.role_id;
-			user.IsActive = dto.is_active;
+			if (!string.IsNullOrEmpty(dto.FirstName))
+				user.FirstName = dto.FirstName;
 
-			if (!string.IsNullOrEmpty(dto.profile_photo))
-				user.ProfilePhoto = dto.profile_photo;
+			if (!string.IsNullOrEmpty(dto.LastName))
+				user.LastName = dto.LastName;
 
-			if (!string.IsNullOrEmpty(dto.password))
-				user.PasswordHash = PasswordHasher.HashPassword(dto.password);
+			if (!string.IsNullOrEmpty(dto.Email))
+				user.Email = dto.Email;
+
+			user.RoleId = roleId;
+			user.IsActive = dto.IsActive;
+
+			if (!string.IsNullOrEmpty(dto.ProfilePhoto))
+				user.ProfilePhoto = dto.ProfilePhoto;
+
+			if (!string.IsNullOrEmpty(dto.Password))
+				user.PasswordHash = PasswordHasher.HashPassword(dto.Password);
 		}
 	}
 }

@@ -13,45 +13,46 @@ namespace AmazonApiServer.DTOs.User
 
 		[Required]
 		[StringLength(100)]
-		[Display(Name = "First Name")]
-		public string first_name { get; set; } = string.Empty;
+		[JsonPropertyName("first_name")]
+		public string FirstName { get; set; } = string.Empty;
 
 		[Required]
 		[StringLength(100)]
-		[Display(Name = "First Name")]
-		public string last_name { get; set; } = string.Empty;
+		[JsonPropertyName("last_name")]
+		public string LastName { get; set; } = string.Empty;
 
 		[Required]
 		[EmailAddress]
-		public string email { get; set; } = string.Empty;
+		[JsonPropertyName("email")]
+		public string Email { get; set; } = string.Empty;
 
 		[Required]
-		[Display(Name = "Role Name")]
-		public string role { get; set; } = string.Empty;
+		[JsonPropertyName("role")]
+		public string Role { get; set; } = string.Empty;
 
 		[Required]
 		[Display(Name = "Is Active")]
-		public bool is_active { get; set; }
+		public bool IsActive { get; set; } = true;
 
-		[Display(Name = "Profile Photo URL")]
+		[JsonPropertyName("profile_photo")]
 		[Url(ErrorMessage = "Invalid URL format")]
-		public string profile_photo { get; set; } = string.Empty;
+		public string ProfilePhoto { get; set; } = string.Empty;
 
 		[Display(Name = "Registration Date")]
 		[DataType(DataType.Date)]
-		public DateTime registration_date { get; set; }
+		public DateTime RegistrationDate { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-		public List<OrderDto>? orders { get; set; }
+		public List<OrderDto>? Orders { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-		public List<ProductDto>? wishlist { get; set; }
+		public List<ProductDto>? WishList { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-		public List<ReviewDto>? reviews { get; set; }
+		public List<ReviewDto>? Reviews { get; set; }
 
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-		public List<ReviewReviewDto>? review_reviews { get; set; }
+		public List<ReviewReviewDto>? ReviewReviews { get; set; }
 	}
 
 	public class ProductDto { public Guid Id { get; set; } public string Name { get; set; } = string.Empty; }

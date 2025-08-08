@@ -1,4 +1,5 @@
 ﻿using AmazonApiServer.Models;
+using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Data
@@ -29,10 +30,10 @@ namespace AmazonApiServer.Data
 						LastName = "Johnson",
 						ProfilePhoto = "/images/users/alice.jpg",
 						Email = "alice.johnson@example.com",
-						PasswordHash = "hashed_pw_1",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_1") ,
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2024-01-15")
+						RegistrationDate = new DateTime(2024,01,15)
 					},
 					new User
 					{
@@ -41,10 +42,10 @@ namespace AmazonApiServer.Data
 						LastName = "Smith",
 						ProfilePhoto = "/images/users/bob.jpg",
 						Email = "bob.smith@example.com",
-						PasswordHash = "hashed_pw_2",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_2"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2023-11-20")
+						RegistrationDate = new DateTime(2023,11,20)
 					},
 					new User
 					{
@@ -53,10 +54,10 @@ namespace AmazonApiServer.Data
 						LastName = "Evans",
 						ProfilePhoto = "/images/users/clara.jpg",
 						Email = "clara.evans@example.com",
-						PasswordHash = "hashed_pw_3",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_3"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2024-03-11")
+						RegistrationDate = new DateTime(2024, 03, 11)
 					},
 					new User
 					{
@@ -65,10 +66,10 @@ namespace AmazonApiServer.Data
 						LastName = "Lee",
 						ProfilePhoto = "/images/users/david.jpg",
 						Email = "david.lee@example.com",
-						PasswordHash = "hashed_pw_4",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_4"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateTime.Parse("2022-12-30")
+						RegistrationDate = new DateTime(2022, 12, 30)
 					},
 					new User
 					{
@@ -77,10 +78,10 @@ namespace AmazonApiServer.Data
 						LastName = "Wilson",
 						ProfilePhoto = "/images/users/emma.jpg",
 						Email = "emma.wilson@example.com",
-						PasswordHash = "hashed_pw_5",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_5"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2023-08-01")
+						RegistrationDate = new DateTime(2023, 08, 01)
 					},
 					new User
 					{
@@ -89,10 +90,10 @@ namespace AmazonApiServer.Data
 						LastName = "Baker",
 						ProfilePhoto = "/images/users/frank.jpg",
 						Email = "frank.baker@example.com",
-						PasswordHash = "hashed_pw_6",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_6"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateTime.Parse("2024-02-17")
+						RegistrationDate = new DateTime(2024, 02, 17)
 					},
 					new User
 					{
@@ -101,10 +102,10 @@ namespace AmazonApiServer.Data
 						LastName = "Turner",
 						ProfilePhoto = "/images/users/grace.jpg",
 						Email = "grace.turner@example.com",
-						PasswordHash = "hashed_pw_7",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_7"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2024-04-08")
+						RegistrationDate = new DateTime(2024, 04, 08)
 					},
 					new User
 					{
@@ -113,10 +114,10 @@ namespace AmazonApiServer.Data
 						LastName = "Davis",
 						ProfilePhoto = "/images/users/henry.jpg",
 						Email = "henry.davis@example.com",
-						PasswordHash = "hashed_pw_8",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_8"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2023-06-25")
+						RegistrationDate = new DateTime(2023, 06, 25)
 					},
 					new User
 					{
@@ -125,10 +126,10 @@ namespace AmazonApiServer.Data
 						LastName = "Brown",
 						ProfilePhoto = "/images/users/isla.jpg",
 						Email = "isla.brown@example.com",
-						PasswordHash = "hashed_pw_9",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_9"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2024-05-18")
+						RegistrationDate = new DateTime(2024, 05, 18)
 					},
 					new User
 					{
@@ -137,10 +138,10 @@ namespace AmazonApiServer.Data
 						LastName = "Miller",
 						ProfilePhoto = "/images/users/jack.jpg",
 						Email = "jack.miller@example.com",
-						PasswordHash = "hashed_pw_10",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_10"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = false,
-						RegistrationDate = DateTime.Parse("2023-01-05")
+						RegistrationDate = new DateTime(2023, 01, 05)
 					},
 					new User
 					{
@@ -149,10 +150,10 @@ namespace AmazonApiServer.Data
 						LastName = "Walker",
 						ProfilePhoto = "/images/users/karen.jpg",
 						Email = "karen.walker@example.com",
-						PasswordHash = "hashed_pw_11",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_11"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2023-03-15")
+						RegistrationDate = new DateTime(2023,03,15)
 					},
 					new User
 					{
@@ -161,10 +162,10 @@ namespace AmazonApiServer.Data
 						LastName = "White",
 						ProfilePhoto = "/images/users/leo.jpg",
 						Email = "leo.white@example.com",
-						PasswordHash = "hashed_pw_12",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_12"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2022-09-10")
+						RegistrationDate = new DateTime(2022, 09, 10)
 					},
 					new User
 					{
@@ -173,10 +174,10 @@ namespace AmazonApiServer.Data
 						LastName = "Clark",
 						ProfilePhoto = "/images/users/mia.jpg",
 						Email = "mia.clark@example.com",
-						PasswordHash = "hashed_pw_13",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_13"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2024-06-10")
+						RegistrationDate = new DateTime(2024, 06, 10)
 					},
 					new User
 					{
@@ -185,10 +186,10 @@ namespace AmazonApiServer.Data
 						LastName = "King",
 						ProfilePhoto = "/images/users/nick.jpg",
 						Email = "nick.king@example.com",
-						PasswordHash = "hashed_pw_14",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_14"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer"),
 						IsActive = true,
-						RegistrationDate = DateTime.Parse("2023-12-01")
+						RegistrationDate = new DateTime(2023, 12, 01)
 					},
 					new User
 					{
@@ -197,10 +198,10 @@ namespace AmazonApiServer.Data
 						LastName = "Green",
 						ProfilePhoto = "/images/users/olivia.jpg",
 						Email = "olivia.green@example.com",
-						PasswordHash = "hashed_pw_15",
+						PasswordHash = PasswordHasher.HashPassword("hashed_pw_15"),
 						Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
 						IsActive = false,
-						RegistrationDate = DateTime.Parse("2024-07-01")
+						RegistrationDate = new DateTime(2024, 07, 01)
 					}
 				);
 				await context.SaveChangesAsync();

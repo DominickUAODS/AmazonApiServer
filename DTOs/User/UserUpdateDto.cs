@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.User
 {
@@ -7,25 +8,32 @@ namespace AmazonApiServer.DTOs.User
 		[Required]
 		public Guid id { get; set; }
 
-		[Required]
+		//[Required]
 		[StringLength(100)]
-		public string first_name { get; set; } = string.Empty;
+		[JsonPropertyName("first_name")]
+		public string? FirstName { get; set; }
 
-		[Required]
+		//[Required]
 		[StringLength(100)]
-		public string last_name { get; set; } = string.Empty;
+		[JsonPropertyName("last_name")]
+		public string? LastName { get; set; }
 
-		[Required]
+		//[Required]
 		[EmailAddress]
-		public string email { get; set; } = string.Empty;
+		[JsonPropertyName("email")]
+		public string? Email { get; set; }
 
-		public string? password { get; set; }
+		[JsonPropertyName("password")]
+		public string? Password { get; set; }
 
-		[Required]
-		public Guid role_id { get; set; }
+		//[Required]
+		[JsonPropertyName("role")]
+		public string? Role { get; set; }
 
-		public string? profile_photo { get; set; }
+		[JsonPropertyName("profile_photo")]
+		public string? ProfilePhoto { get; set; }
 
-		public bool is_active { get; set; }
+		[JsonPropertyName("is_active")]
+		public bool IsActive { get; set; } = true;
 	}
 }

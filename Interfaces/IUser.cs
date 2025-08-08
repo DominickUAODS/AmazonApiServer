@@ -1,5 +1,4 @@
 ﻿using AmazonApiServer.DTOs.User;
-using AmazonApiServer.Models;
 
 namespace AmazonApiServer.Interfaces
 {

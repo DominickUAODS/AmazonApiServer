@@ -4,7 +4,6 @@ using System.Text;
 using AmazonApiServer.Data;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 public class TokenRepository : IToken
@@ -23,6 +22,7 @@ public class TokenRepository : IToken
 		var claims = new[]
 		{
 			new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+			new Claim(JwtRegisteredClaimNames.Name, user.FirstName),
 			new Claim(JwtRegisteredClaimNames.Email, user.Email),
 			new Claim(ClaimTypes.Role, user.Role?.Name ?? "Customer"),
 			new Claim("tokenType", "accessToken")
@@ -32,6 +32,8 @@ public class TokenRepository : IToken
 		var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 		var token = new JwtSecurityToken(
+			issuer: _configuration["Jwt:Issuer"],
+			audience: _configuration["Jwt:Audience"],
 			claims: claims,
 			expires: DateTime.UtcNow.AddHours(2),
 			signingCredentials: creds
@@ -40,13 +42,12 @@ public class TokenRepository : IToken
 		return new JwtSecurityTokenHandler().WriteToken(token);
 	}
 
-	public async Task<string> CreateRefreshTokenAsync(Guid userId)
+	public async Task<string> CreateRefreshTokenAsync(User user)
 	{
-		var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
 		var claims = new[]
 		{
 			new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+			new Claim(JwtRegisteredClaimNames.Name, user.FirstName),
 			new Claim(JwtRegisteredClaimNames.Email, user.Email),
 			new Claim(ClaimTypes.Role, user.Role?.Name ?? "Customer"),
 			new Claim("tokenType", "refreshToken")
@@ -66,7 +67,7 @@ public class TokenRepository : IToken
 		var refreshToken = new RefreshToken
 		{
 			Id = Guid.NewGuid(),
-			UserId = userId,
+			UserId = user.Id,
 			Token = new JwtSecurityTokenHandler().WriteToken(token),
 			ExpiresAt = token.ValidTo,
 			IsRevoked = false

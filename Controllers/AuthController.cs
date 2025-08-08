@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using AmazonApiServer.Data;
 using AmazonApiServer.DTOs.Auth;
+using AmazonApiServer.Helpers;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using AmazonApiServer.Services;
@@ -41,7 +42,7 @@ namespace AmazonApiServer.Controllers
 				return Unauthorized(new { error = "Invalid credentials" });
 
 			var jwt = _tokenService.CreateJwtToken(user);
-			var refreshToken = await _tokenService.CreateRefreshTokenAsync(user.Id);
+			var refreshToken = await _tokenService.CreateRefreshTokenAsync(user);
 
 			return Ok(new AuthResponseDto
 			{
@@ -87,12 +88,12 @@ namespace AmazonApiServer.Controllers
 			_context.EmailVerificationCodes.Add(entry);
 			await _context.SaveChangesAsync();
 
-			await _emailService.SendConfirmationCodeAsync(dto.Email, code);
+			await _emailService.SendConfirmationCodeAsync(dto.Email, code, "Registration Confirmation", "Here is your confirmation code for registration:");
 			return Ok("Verification code sent to email.");
 		}
 
 		// Шаг 2: Проверка кода
-		[HttpPost("register/verify")]
+		[HttpPost("verify")]
 		public async Task<IActionResult> VerifyCode([FromBody] EmailCodeVerificationDto dto)
 		{
 			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);
@@ -158,7 +159,7 @@ namespace AmazonApiServer.Controllers
 			
 			oldToken.IsRevoked = true;
 
-			var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.UserId);
+			var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
 			var jwt = _tokenService.CreateJwtToken(oldToken.User);
 
 			await _context.SaveChangesAsync();
@@ -197,26 +198,174 @@ namespace AmazonApiServer.Controllers
 			return Ok(new { message = "Logged out successfully" });
 		}
 
-		[HttpPost("verify")]
-		public async Task<bool> VerifyConfirmationCodeAsync(string email, string code)
-		{
-			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == email);
+		//[HttpPost("verify")]
+		//public async Task<bool> VerifyConfirmationCodeAsync(string email, string code)
+		//{
+		//	var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == email);
 
-			// Очистка, если истёк срок
-			if (entry == null || entry.IsExpired)
+		//	// Очистка, если истёк срок
+		//	if (entry == null || entry.IsExpired)
+		//	{
+		//		if (entry != null)
+		//		{
+		//			_context.EmailVerificationCodes.Remove(entry);
+		//			await _context.SaveChangesAsync();
+		//		}
+		//		return false;
+		//	}
+
+		//	if (entry.Code != code)
+		//		return false;
+
+		//	return true;
+		//}
+
+		[HttpPost("reset/start")]
+		public async Task<IActionResult> StartPasswordReset([FromBody] PasswordResetStartDto dto)
+		{
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+			if (user == null)
+				return NotFound("User with this email not found");
+
+			var existing = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);
+			if (existing != null)
 			{
-				if (entry != null)
-				{
-					_context.EmailVerificationCodes.Remove(entry);
-					await _context.SaveChangesAsync();
-				}
-				return false;
+				_context.EmailVerificationCodes.Remove(existing);
+				await _context.SaveChangesAsync();
 			}
 
-			if (entry.Code != code)
-				return false;
+			var code = CodeGenerator.Generate6DigitCode();
 
-			return true;
+			_context.EmailVerificationCodes.Add(new EmailVerificationCode
+			{
+				Email = dto.Email,
+				Code = code
+			});
+			await _context.SaveChangesAsync();
+
+			await _emailService.SendConfirmationCodeAsync(dto.Email, code, "Password Reset", "Here is your password reset code:");
+
+			return Ok("Password reset code sent to your email.");
+		}
+
+		[HttpPost("reset/complete")]
+		public async Task<IActionResult> CompletePasswordReset([FromBody] PasswordResetCompleteDto dto)
+		{
+			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);
+			if (entry == null || entry.IsExpired || entry.Code != dto.Code)
+				return BadRequest("Invalid or expired code");
+
+			if (!PasswordValidator.IsValid(dto.NewPassword))
+				return BadRequest("Password must be at least 8 characters long and contain upper, lower letters and digits.");
+
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+			if (user == null)
+				return NotFound("User not found");
+
+			user.PasswordHash = PasswordHasher.HashPassword(dto.NewPassword);
+
+			_context.EmailVerificationCodes.Remove(entry);
+			await _context.SaveChangesAsync();
+
+			return Ok("Password reset successfully");
+		}
+
+		[HttpPost("resend-code")]
+		public async Task<IActionResult> ResendCode([FromBody] ResendCodeDto dto)
+		{
+			// dto.Purpose: "register" или "reset"
+			if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Purpose))
+				return BadRequest("Email and purpose are required.");
+
+			dto.Purpose = dto.Purpose.ToLower();
+
+			if (dto.Purpose != "register" && dto.Purpose != "reset")
+				return BadRequest("Invalid purpose. Allowed values: register, reset");
+
+			// Проверка существования пользователя
+			var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+
+			if (dto.Purpose == "register" && userExists)
+				return BadRequest("User with this email already exists.");
+			if (dto.Purpose == "reset" && !userExists)
+				return NotFound("User with this email not found.");
+
+			// Ищем запись с кодом
+			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);
+
+			if (entry != null)
+			{
+				_context.EmailVerificationCodes.Remove(entry);
+				await _context.SaveChangesAsync();
+			}
+
+			// Генерация нового кода
+			var code = CodeGenerator.Generate6DigitCode();
+
+			var newEntry = new EmailVerificationCode
+			{
+				Email = dto.Email,
+				Code = code
+			};
+
+			_context.EmailVerificationCodes.Add(newEntry);
+			await _context.SaveChangesAsync();
+
+			// Локализация и тексты
+			string title, subtitle;
+			if (dto.Purpose == "register")
+			{
+				title = "Registration Confirmation";
+				subtitle = "Here is your confirmation code for registration:";
+			}
+			else // reset
+			{
+				title = "Password Reset";
+				subtitle = "Here is your password reset code:";
+			}
+
+			await _emailService.SendConfirmationCodeAsync(dto.Email, code, title, subtitle);
+
+			return Ok("Verification code resent to email.");
+		}
+
+		[HttpPost("change-password")]
+		[Authorize]
+		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+		{
+			// 1. Получаем ID пользователя из токена
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+			if (string.IsNullOrEmpty(userIdClaim))
+				return Unauthorized("Invalid token");
+
+			var userId = Guid.Parse(userIdClaim);
+
+			// 2. Находим пользователя в БД
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+			if (user == null)
+				return NotFound("User not found");
+
+			// 3. Проверяем текущий пароль
+			if (!PasswordHasher.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
+				return BadRequest("Current password is incorrect");
+
+			// 4. Проверяем сложность нового пароля
+			if (!PasswordValidator.IsValid(dto.NewPassword))
+				return BadRequest("Password must be at least 8 characters long and contain upper, lower letters and digits.");
+
+			// 5. Меняем пароль
+			user.PasswordHash = PasswordHasher.HashPassword(dto.NewPassword);
+
+			await _context.SaveChangesAsync();
+
+			// 6. (Опционально) Отзываем все refresh-токены
+			var tokens = _context.RefreshTokens.Where(t => t.UserId == user.Id && !t.IsRevoked);
+			foreach (var t in tokens)
+				t.IsRevoked = true;
+
+			await _context.SaveChangesAsync();
+
+			return Ok("Password changed successfully. Please log in again.");
 		}
 	}
 }

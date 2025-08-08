@@ -61,7 +61,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpDelete("{id}")]
-		[Authorize(Roles = "Admin")]
+		[Authorize]
 		public async Task<IActionResult> DeleteUser(Guid id)
 		{
 			var result = await _users.MarkDeleteUserAsync(id);

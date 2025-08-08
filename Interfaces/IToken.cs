@@ -5,6 +5,6 @@ namespace AmazonApiServer.Interfaces
 	public interface IToken
 	{
 		string CreateJwtToken(User user);
-		Task<string> CreateRefreshTokenAsync(Guid userId);
+		Task<string> CreateRefreshTokenAsync(User user);
 	}
 }

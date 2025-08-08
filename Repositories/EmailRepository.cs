@@ -1,5 +1,5 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using MimeKit;
+using MailKit.Security;
 using AmazonApiServer.Interfaces;
 
 public class EmailRepository : IEmail
@@ -13,7 +13,7 @@ public class EmailRepository : IEmail
 		_logger = logger;
 	}
 
-	public async Task SendConfirmationCodeAsync(string email, string code)
+	public async Task SendConfirmationCodeAsync(string email, string code, string title, string subtitle)
 	{
 		// конфигурация из appsettings.json
 		var smtpHost = _config["Email:SmtpHost"];
@@ -21,20 +21,43 @@ public class EmailRepository : IEmail
 		var smtpUser = _config["Email:SmtpUser"];
 		var smtpPass = _config["Email:SmtpPass"];
 		var fromEmail = _config["Email:From"]!;
+		var fromName = _config["Email:FromName"] ?? "Support";
 
-		using var client = new SmtpClient(smtpHost, smtpPort)
+		// Загружаем HTML-шаблон
+		var templatePath = Path.Combine("Templates", "CodeEmail.html");
+		if (!File.Exists(templatePath))
 		{
-			EnableSsl = true,
-			Credentials = new NetworkCredential(smtpUser, smtpPass)
-		};
+			_logger.LogError("Email template not found: {path}", templatePath);
+			throw new FileNotFoundException("Email template not found.", templatePath);
+		}
 
-		MailMessage mail = new MailMessage(fromEmail, email)
+		var html = await File.ReadAllTextAsync(templatePath);
+
+		html = html
+			.Replace("{{TITLE}}", title)
+			.Replace("{{SUBTITLE}}", subtitle)
+			.Replace("{{CODE}}", code);
+
+		// Создаём письмо
+		var message = new MimeMessage();
+		message.From.Add(new MailboxAddress(fromName, fromEmail));
+		message.To.Add(MailboxAddress.Parse(email));
+		message.Subject = title;
+
+		var builder = new BodyBuilder
 		{
-			Subject = "Confirmation Code",
-			Body = $"Your confirmation code: {code}"
+			HtmlBody = html,
+			TextBody = $"Your confirmation code is: {code}"
 		};
+		message.Body = builder.ToMessageBody();
 
-		await client.SendMailAsync(mail);
+		// Отправка через SMTP
+		using var client = new MailKit.Net.Smtp.SmtpClient();
+		await client.ConnectAsync(smtpHost, smtpPort, SecureSocketOptions.StartTls);
+		await client.AuthenticateAsync(smtpUser, smtpPass);
+		await client.SendAsync(message);
+		await client.DisconnectAsync(true);
+
 		_logger.LogInformation("Confirmation email sent to {email}", email);
 	}
 }

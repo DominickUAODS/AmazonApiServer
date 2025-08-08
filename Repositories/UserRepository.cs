@@ -45,11 +45,11 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<UserDto?> AddUserAsync(UserCreateDto dto)
 		{
-			var role = await _context.Roles.FindAsync(dto.RoleId);
+			var role = await _context.Roles.FirstOrDefaultAsync(u => u.Name == dto.Role);
 			if (role == null) return null;
 
 			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
-			var user = dto.ToUser(hashedPassword);
+			var user = dto.ToUser(hashedPassword, role.Id);
 
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
@@ -64,7 +64,18 @@ namespace AmazonApiServer.Repositories
 			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.id);
 			if (user == null) return null;
 
-			user.UpdateFromDto(dto);
+			var role = await _context.Roles.FirstOrDefaultAsync(u => u.Name == dto.Role);
+			if (role == null) return null;
+
+			user.UpdateFromDto(dto, role.Id);
+
+			// при смене ЛЮБЫХ данных блочим и отзываем токены
+			// нужен сервис по удалению просоченных или отозванных токенов
+			// можно заглушить на время тестов
+			var tokens = await _context.RefreshTokens.Where(t => t.UserId == user.Id && !t.IsRevoked).ToListAsync();
+			foreach (var t in tokens)
+				t.IsRevoked = true;
+
 			await _context.SaveChangesAsync();
 
 			return user.ToDto();
