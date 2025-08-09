@@ -4,10 +4,11 @@ namespace AmazonApiServer.Interfaces
 {
 	public interface IOrder
 	{
-		Task<IEnumerable<OrderDto>> GetAllAsync();
-		Task<OrderDto?> GetByIdAsync(Guid id);
-		Task<OrderDto?> CreateAsync(OrderCreateDto dto);
-		Task<OrderDto?> UpdateAsync(OrderUpdateDto dto);
-		Task<bool> DeleteAsync(Guid id);
+		Task<IEnumerable<OrderDto>> GetAllOrdersAsync();
+		Task<OrderDto?> GetOrderByIdAsync(Guid orderId);
+		Task<IEnumerable<OrderDto?>> GetOrdersByUserIdAsync(Guid userId);
+		Task<OrderDto?> CreateOrderAsync(OrderCreateDto dto);
+		Task<OrderDto?> UpdateOrderAsync(OrderUpdateDto dto);
+		Task<bool> DeleteOrderAsync(Guid id);
 	}
 }

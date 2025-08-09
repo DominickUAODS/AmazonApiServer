@@ -2,7 +2,6 @@
 using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Extensions;
 using AmazonApiServer.Interfaces;
-using AmazonApiServer.Models;
 using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,10 +10,12 @@ namespace AmazonApiServer.Repositories
 	public class UserRepository : IUser
 	{
 		private readonly ApplicationContext _context;
+		private readonly IImageService _imageService;
 
-		public UserRepository(ApplicationContext context)
+		public UserRepository(ApplicationContext context, IImageService imageService)
 		{
 			_context = context;
+			_imageService = imageService;
 		}
 
 		public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -49,7 +50,7 @@ namespace AmazonApiServer.Repositories
 			if (role == null) return null;
 
 			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
-			var user = dto.ToUser(hashedPassword, role.Id);
+			var user = await dto.ToUserAsync(hashedPassword, role.Id, _imageService);
 
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
@@ -67,7 +68,7 @@ namespace AmazonApiServer.Repositories
 			var role = await _context.Roles.FirstOrDefaultAsync(u => u.Name == dto.Role);
 			if (role == null) return null;
 
-			user.UpdateFromDto(dto, role.Id);
+			await user.UpdateFromDtoAsync(dto, role.Id, _imageService);
 
 			// при смене ЛЮБЫХ данных блочим и отзываем токены
 			// нужен сервис по удалению просоченных или отозванных токенов

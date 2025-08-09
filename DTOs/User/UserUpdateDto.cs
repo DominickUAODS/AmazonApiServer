@@ -31,7 +31,7 @@ namespace AmazonApiServer.DTOs.User
 		public string? Role { get; set; }
 
 		[JsonPropertyName("profile_photo")]
-		public string? ProfilePhoto { get; set; }
+		public IFormFile? ProfilePhoto { get; set; }
 
 		[JsonPropertyName("is_active")]
 		public bool IsActive { get; set; } = true;

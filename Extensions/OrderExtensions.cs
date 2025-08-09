@@ -1,4 +1,5 @@
 ﻿using AmazonApiServer.DTOs.Order;
+using AmazonApiServer.Enums;
 using AmazonApiServer.Models;
 
 namespace AmazonApiServer.Extensions
@@ -25,11 +26,11 @@ namespace AmazonApiServer.Extensions
 			{
 				Id = Guid.NewGuid(),
 				UserId = dto.UserId,
-				//OrderedOn = dto.OrderedOn,
+				OrderedOn = DateTime.UtcNow,
 				RecipientsName = dto.RecipientsName,
 				Address = dto.Address,
 				PaymentType = dto.PaymentType,
-				//Status = dto.Status
+				Status = OrderStatus.RECEIVED
 			};
 		}
 

@@ -7,20 +7,28 @@ namespace AmazonApiServer.Models
 	{
 		[JsonPropertyName("id")]
 		public Guid Id { get; set; }
+
 		public Guid UserId { get; set; }
+
 		[JsonPropertyName("user")]
 		public User? User { get; set; }
+
 		[JsonPropertyName("order_status")]
 		public OrderStatus Status { get; set; }
+
 		[JsonPropertyName("ordered_on")]
 		public DateTime OrderedOn { get; set; }
+
 		[JsonPropertyName("recipients_name")]
 		public required string RecipientsName { get; set; }
+
 		[JsonPropertyName("address")]
 		public required string Address { get; set; }
+
 		[JsonPropertyName("payment_type")]
 		public PaymentType PaymentType { get; set; }
+
 		[JsonPropertyName("order_items")]
-		public List<OrderItem>? OrderItems { get; set; }
+		public List<OrderItem> OrderItems { get; set; } = [];
 	}
 }

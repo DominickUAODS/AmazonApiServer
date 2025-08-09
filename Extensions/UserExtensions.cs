@@ -1,23 +1,48 @@
-﻿using AmazonApiServer.Models;
-using AmazonApiServer.Services;
-using AmazonApiServer.DTOs.User;
+﻿using AmazonApiServer.DTOs.Order;
 using AmazonApiServer.DTOs.Review;
 using AmazonApiServer.DTOs.ReviewReview;
-using AmazonApiServer.DTOs.Order;
+using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Interfaces;
+using AmazonApiServer.Models;
+using AmazonApiServer.Services;
 
 namespace AmazonApiServer.Extensions
 {
 	public static class UserExtensions
 	{
-		public static UserDto ToDto(this User user)
+		public static UserDto ToDto(this User user, string? baseUrl = null)
 		{
+			string profilePhotoUrl;
+
+			if (!string.IsNullOrEmpty(user.ProfilePhoto))
+			{
+				// Если фото уже содержит полный путь (http/https), оставляем как есть
+				if (user.ProfilePhoto.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+				{
+					profilePhotoUrl = user.ProfilePhoto;
+				}
+				else
+				{
+					// Если указан baseUrl — собираем полный путь, иначе просто возвращаем как есть
+					profilePhotoUrl = baseUrl != null
+						? $"{baseUrl.TrimEnd('/')}/{user.ProfilePhoto.TrimStart('/')}"
+						: user.ProfilePhoto;
+				}
+			}
+			else
+			{
+				profilePhotoUrl = baseUrl != null
+					? $"{baseUrl.TrimEnd('/')}/images/users/default.jpg"
+					: "/images/users/default.jpg";
+			}
+
 			return new UserDto
 			{
 				id = user.Id,
 				FirstName = user.FirstName,
 				LastName = user.LastName,
 				Email = user.Email,
-				ProfilePhoto = user.ProfilePhoto,
+				ProfilePhoto = profilePhotoUrl,
 				Role = user.Role?.Name ?? "Customer",
 				IsActive = user.IsActive,
 				RegistrationDate = user.RegistrationDate,
@@ -29,8 +54,15 @@ namespace AmazonApiServer.Extensions
 			};
 		}
 
-		public static User ToUser(this UserCreateDto dto, string hashedPassword, Guid roleId)
+		public static async Task<User> ToUserAsync(this UserCreateDto dto, string hashedPassword, Guid roleId, IImageService imageService)
 		{
+			string profilePhotoUrl = "/images/users/default.jpg";
+
+			if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
+			{
+				profilePhotoUrl = await imageService.UploadAsync(dto.ProfilePhoto);
+			}
+
 			return new User
 			{
 				Id = Guid.NewGuid(),
@@ -39,13 +71,13 @@ namespace AmazonApiServer.Extensions
 				Email = dto.Email,
 				PasswordHash = hashedPassword,
 				RoleId = roleId,
-				ProfilePhoto = dto.ProfilePhoto ?? "/images/users/default.jpg",
+				ProfilePhoto = profilePhotoUrl,
 				IsActive = dto.IsActive
 				//RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow)
 			};
 		}
 
-		public static void UpdateFromDto(this User user, UserUpdateDto dto, Guid roleId)
+		public static async Task UpdateFromDtoAsync(this User user, UserUpdateDto dto, Guid roleId, IImageService imageService)
 		{
 			if (!string.IsNullOrEmpty(dto.FirstName))
 				user.FirstName = dto.FirstName;
@@ -59,8 +91,11 @@ namespace AmazonApiServer.Extensions
 			user.RoleId = roleId;
 			user.IsActive = dto.IsActive;
 
-			if (!string.IsNullOrEmpty(dto.ProfilePhoto))
-				user.ProfilePhoto = dto.ProfilePhoto;
+			if (dto.ProfilePhoto != null && dto.ProfilePhoto.Length > 0)
+			{
+				var uploadedUrl = await imageService.UploadAsync(dto.ProfilePhoto);
+				user.ProfilePhoto = uploadedUrl;
+			}
 
 			if (!string.IsNullOrEmpty(dto.Password))
 				user.PasswordHash = PasswordHasher.HashPassword(dto.Password);
