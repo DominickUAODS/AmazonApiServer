@@ -41,7 +41,8 @@ namespace AmazonApiServer.Controllers
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
                 Description = categoryDto.Description,
-                ParentId = categoryDto.ParentId
+                ParentId = categoryDto.ParentId,
+                PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
             };
             Category created;
             try
@@ -60,6 +61,10 @@ namespace AmazonApiServer.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditCategoryDto categoryDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             Category category = new()
             {
                 Id = id,
@@ -68,7 +73,8 @@ namespace AmazonApiServer.Controllers
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
                 Description = categoryDto.Description,
-                ParentId = categoryDto.ParentId
+                ParentId = categoryDto.ParentId,
+                PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
             };
             Category? result;
             string? oldPicture = (await _categories.GetByIdAsync(id))?.Image;

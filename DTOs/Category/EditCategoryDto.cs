@@ -7,10 +7,10 @@ namespace AmazonApiServer.DTOs.Category
     public class EditCategoryDto
     {
         [JsonPropertyName("image")]
-        [FileExtensions("jpg")]
+        [FileExtensions("jpg,png")]
         public required IFormFile Image { get; set; }
         [JsonPropertyName("icon")]
-        public CategoryIcon Icon { get; set; }
+        public CategoryIcon? Icon { get; set; }
         [JsonPropertyName("name")]
         public required string Name { get; set; }
         [JsonPropertyName("is_active")]
@@ -20,5 +20,7 @@ namespace AmazonApiServer.DTOs.Category
         [JsonPropertyName("parent_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? ParentId { get; set; }
+        [JsonPropertyName("property_keys")]
+        public List<string>? PropertyKeys { get; set; }
     }
 }

@@ -37,6 +37,9 @@ namespace AmazonApiServer.Repositories
                 existingProduct.Price = product.Price;
                 existingProduct.Discount = product.Discount;
                 existingProduct.Number = product.Number;
+                existingProduct.Displays = product.Displays;
+                existingProduct.Details = product.Details;
+                existingProduct.Features = product.Features;
                 await _context.SaveChangesAsync();
             }
             return existingProduct;
