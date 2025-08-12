@@ -7,6 +7,8 @@ namespace AmazonApiServer.DTOs.Product
 {
     public class AddProductDto
     {
+        [JsonPropertyName("name")]
+        public required string Name { get; set; }
         [JsonPropertyName("code")]
         public required string Code { get; set; }
         [JsonPropertyName("category_id")]

@@ -14,7 +14,7 @@ namespace AmazonApiServer.Attributes
                 string fileName = file.FileName;
                 return Array.Exists(AllowedExtensions, y => fileName.EndsWith('.' + y));
             }
-            else if (value is IFormFileCollection collection)
+            else if (value is IEnumerable<IFormFile> collection)
             {
                 foreach (string fileName in collection.Select(f => f.FileName))
                 {

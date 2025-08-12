@@ -27,6 +27,7 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPost]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateAsync([FromForm] AddProductDto productDto)
         {
             if (!ModelState.IsValid)
@@ -37,6 +38,7 @@ namespace AmazonApiServer.Controllers
             string[] displayPaths = await Task.WhenAll(uploadTasks);
             Product product = new()
             {
+                Name = productDto.Name,
                 Code = productDto.Code,
                 CategoryId = productDto.CategoryId,
                 Price = productDto.Price,
@@ -61,6 +63,7 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPut("{id}")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditProductDto productDto)
         {
             if (!ModelState.IsValid)
@@ -72,6 +75,7 @@ namespace AmazonApiServer.Controllers
             Product product = new()
             {
                 Id = id,
+                Name = productDto.Name,
                 Code = productDto.Code,
                 CategoryId = productDto.CategoryId,
                 Price = productDto.Price,

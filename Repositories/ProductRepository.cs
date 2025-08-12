@@ -1,7 +1,9 @@
 ﻿using AmazonApiServer.Data;
+using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
 
 namespace AmazonApiServer.Repositories
 {
@@ -32,6 +34,7 @@ namespace AmazonApiServer.Repositories
             Product? existingProduct = await _context.Products.FirstOrDefaultAsync(c => c.Id == product.Id);
             if (existingProduct is not null)
             {
+                existingProduct.Name = product.Name;
                 existingProduct.Code = product.Code;
                 existingProduct.CategoryId = product.CategoryId;
                 existingProduct.Price = product.Price;

@@ -31,6 +31,7 @@ builder.Services.AddScoped<IToken, TokenRepository>();
 builder.Services.AddScoped<IEmail, EmailRepository>();
 
 builder.Services.AddScoped<ICategoryRepo, CategoryRepository>();
+builder.Services.AddScoped<IProductRepo, ProductRepository>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 
 var tokenValidationParameters = JwtConfigHelper.GetTokenValidationParameters(builder.Configuration);
@@ -81,7 +82,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger(c => c.SerializeAsV2 = true);
+	app.UseSwagger();
 	app.UseSwaggerUI();
 }
 
