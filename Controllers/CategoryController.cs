@@ -16,14 +16,35 @@ namespace AmazonApiServer.Controllers
         public async Task<IActionResult> GetAllAsync()
         {
             List<Category> categoriesList = await _categories.GetAllAsync();
-            return Ok(categoriesList);
+            List<CategoryInListDto> categoryDtosList = categoriesList.Select(c => new CategoryInListDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Icon = c.Icon,
+                ParentId = c.ParentId
+            }).ToList();
+            return Ok(categoryDtosList);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             Category? category = await _categories.GetByIdAsync(id);
-            return category is null ? NotFound() : Ok(category);
+            if (category is null)
+            {
+                return NotFound();
+            }
+            CategoryDto categoryDto = new()
+            {
+                Name = category.Name,
+                Icon = category.Icon,
+                Image = category.Image,
+                IsActive = category.IsActive,
+                Description = category.Description,
+                ParentId = category.ParentId,
+                PropertyKeys = category.PropertyKeys?.Select(p => p.Name).ToList() ?? []
+            };
+            return Ok(categoryDto);
         }
 
         [HttpPost]

@@ -1,4 +1,6 @@
 ﻿using AmazonApiServer.DTOs.Product;
+using AmazonApiServer.DTOs.ProductDetail;
+using AmazonApiServer.DTOs.ProductFeature;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +18,38 @@ namespace AmazonApiServer.Controllers
         public async Task<IActionResult> GetAllAsync()
         {
             List<Product> productsList = await _products.GetAllAsync();
-            return Ok(productsList);
+            IEnumerable<ProductInListDto> productDtosList = productsList.Select(p => new ProductInListDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Discount = p.Discount,
+                Display = p.Displays?.Select(d => d.Image).First() ?? string.Empty,
+            });
+            return Ok(productDtosList);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             Product? product = await _products.GetByIdAsync(id);
-            return product is null ? NotFound() : Ok(product);
+            if (product is null)
+            {
+                return NotFound();
+            }
+            ProductDto productDto = new()
+            {
+                Name = product.Name,
+                Code = product.Code,
+                CategoryId = product.CategoryId,
+                Price = product.Price,
+                Discount = product.Discount,
+                Number = product.Number,
+                Displays = product.Displays?.Select(d => d.Image).ToList() ?? [],
+                Details = product.Details?.Select(d => new ProductDetailDto { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList() ?? [],
+                Features = product.Features?.Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? []
+            };
+            return Ok(productDto);
         }
 
         [HttpPost]

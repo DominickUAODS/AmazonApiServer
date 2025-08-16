@@ -1,9 +1,7 @@
 ﻿using AmazonApiServer.Data;
-using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
 
 namespace AmazonApiServer.Repositories
 {
@@ -15,7 +13,7 @@ namespace AmazonApiServer.Repositories
         {
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
-            return product;
+            return product; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<Product?> DeleteAsync(Guid productId)
@@ -26,7 +24,7 @@ namespace AmazonApiServer.Repositories
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
-            return product;
+            return product; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<Product?> EditAsync(Product product)
@@ -45,17 +43,17 @@ namespace AmazonApiServer.Repositories
                 existingProduct.Features = product.Features;
                 await _context.SaveChangesAsync();
             }
-            return existingProduct;
+            return existingProduct; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<List<Product>> GetAllAsync()
         {
-            return await _context.Products.ToListAsync();
+            return await _context.Products.Include(e => e.Displays).ToListAsync();
         }
 
         public async Task<Product?> GetByIdAsync(Guid id)
         {
-            return await _context.Products.FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Products.Include(e => e.Displays).Include(e => e.Features).Include(e => e.Details).Include(e => e.Reviews).FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }

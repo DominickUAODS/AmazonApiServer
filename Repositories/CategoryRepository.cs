@@ -13,7 +13,7 @@ namespace AmazonApiServer.Repositories
         {
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
-            return category;
+            return category; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<Category?> DeleteAsync(Guid categoryId)
@@ -24,7 +24,7 @@ namespace AmazonApiServer.Repositories
                 _context.Categories.Remove(category);
                 await _context.SaveChangesAsync();
             }
-            return category;
+            return category; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<Category?> EditAsync(Category category)
@@ -41,7 +41,7 @@ namespace AmazonApiServer.Repositories
                 existingCategory.PropertyKeys = category.PropertyKeys;
                 await _context.SaveChangesAsync();
             }
-            return existingCategory;
+            return existingCategory; // todo maybe include foreign keys for debug purposes
         }
 
         public async Task<List<Category>> GetAllAsync()
@@ -51,7 +51,7 @@ namespace AmazonApiServer.Repositories
 
         public async Task<Category?> GetByIdAsync(Guid id)
         {
-            return await _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+            return await _context.Categories.Include(e => e.PropertyKeys).FirstOrDefaultAsync(c => c.Id == id);
         }
     }
 }
