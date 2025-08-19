@@ -1,4 +1,5 @@
 ﻿using AmazonApiServer.Data;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
@@ -46,9 +47,15 @@ namespace AmazonApiServer.Repositories
             return existingProduct; // todo maybe include foreign keys for debug purposes
         }
 
-        public async Task<List<Product>> GetAllAsync()
+        public async Task<List<Product>> GetAllAsync(ProductsFilter filter)
         {
-            return await _context.Products.Include(e => e.Displays).ToListAsync();
+            IQueryable<Product> query = _context.Products;
+            if (filter.CategoryId is not null)
+            {
+                query = query.Where(p => p.CategoryId == filter.CategoryId);
+            }
+            query = query.Include(e => e.Displays);
+            return await query.ToListAsync();
         }
 
         public async Task<Product?> GetByIdAsync(Guid id)

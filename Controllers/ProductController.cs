@@ -1,6 +1,7 @@
 ﻿using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.ProductDetail;
 using AmazonApiServer.DTOs.ProductFeature;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -15,9 +16,9 @@ namespace AmazonApiServer.Controllers
         private readonly IImageService _imageService = imageService;
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync([FromQuery] ProductsFilter filter)
         {
-            List<Product> productsList = await _products.GetAllAsync();
+            List<Product> productsList = await _products.GetAllAsync(filter);
             IEnumerable<ProductInListDto> productDtosList = productsList.Select(p => new ProductInListDto
             {
                 Id = p.Id,
