@@ -3,6 +3,7 @@ using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace AmazonApiServer.Repositories
 {
@@ -52,7 +53,8 @@ namespace AmazonApiServer.Repositories
             IQueryable<Product> query = _context.Products;
             if (filter.CategoryId is not null)
             {
-                query = query.Where(p => p.CategoryId == filter.CategoryId);
+                List<Guid> categoryIds = await GetSubCategoryIdsAsync(filter.CategoryId.Value);
+                query = query.Where(p => p.CategoryId.HasValue && categoryIds.Contains(p.CategoryId.Value));
             }
             query = query.Include(e => e.Displays);
             return await query.ToListAsync();
@@ -61,6 +63,24 @@ namespace AmazonApiServer.Repositories
         public async Task<Product?> GetByIdAsync(Guid id)
         {
             return await _context.Products.Include(e => e.Displays).Include(e => e.Features).Include(e => e.Details).Include(e => e.Reviews).FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        private async Task<List<Guid>> GetSubCategoryIdsAsync(Guid parentId)
+        {
+            List<Category> allCategories = await _context.Categories.ToListAsync();
+            List<Guid> guids = [];
+            GetChildren(parentId, allCategories, guids);
+            return guids;
+        }
+
+        private static void GetChildren(Guid parentId, List<Category> allCategories, List<Guid> result)
+        {
+            List<Category> children = allCategories.Where(c => c.ParentId == parentId).ToList();
+            result.Add(parentId);
+            foreach (Guid childId in children.Select(c => c.Id))
+            {
+                GetChildren(childId, allCategories, result);
+            }
         }
     }
 }
