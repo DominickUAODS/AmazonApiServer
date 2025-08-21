@@ -47,7 +47,6 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateAsync([FromForm] AddCategoryDto categoryDto)
         {
             if (!ModelState.IsValid)
@@ -77,7 +76,6 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPut("{id}")]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditCategoryDto categoryDto)
         {
             if (!ModelState.IsValid)

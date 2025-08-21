@@ -53,7 +53,6 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateAsync([FromForm] AddProductDto productDto)
         {
             if (!ModelState.IsValid)
