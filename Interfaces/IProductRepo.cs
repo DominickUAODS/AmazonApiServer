@@ -1,4 +1,5 @@
-﻿using AmazonApiServer.Models;
+﻿using AmazonApiServer.Filters;
+using AmazonApiServer.Models;
 
 namespace AmazonApiServer.Interfaces
 {
@@ -7,7 +8,7 @@ namespace AmazonApiServer.Interfaces
         Task<Product> CreateAsync(Product product);
         Task<Product?> EditAsync(Product product);
         Task<Product?> DeleteAsync(Guid productId);
-        Task<List<Product>> GetAllAsync();
+        Task<List<Product>> GetAllAsync(ProductsFilter filter);
         Task<Product?> GetByIdAsync(Guid id);
     }
 }

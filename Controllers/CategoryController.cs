@@ -7,27 +7,46 @@ namespace AmazonApiServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CategoryController(ICategoryRepo categories, IImageService imageService) : ControllerBase
+    public class CategoryController(ICategoryRepo categories) : ControllerBase
     {
         private readonly ICategoryRepo _categories = categories;
-        private readonly IImageService _imageService = imageService;
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
             List<Category> categoriesList = await _categories.GetAllAsync();
-            return Ok(categoriesList);
+            List<CategoryInListDto> categoryDtosList = categoriesList.Select(c => new CategoryInListDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Icon = c.Icon,
+                ParentId = c.ParentId
+            }).ToList();
+            return Ok(categoryDtosList);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             Category? category = await _categories.GetByIdAsync(id);
-            return category is null ? NotFound() : Ok(category);
+            if (category is null)
+            {
+                return NotFound();
+            }
+            CategoryDto categoryDto = new()
+            {
+                Name = category.Name,
+                Icon = category.Icon,
+                Image = category.Image,
+                IsActive = category.IsActive,
+                Description = category.Description,
+                ParentId = category.ParentId,
+                PropertyKeys = category.PropertyKeys?.Select(p => p.Name).ToList() ?? []
+            };
+            return Ok(categoryDto);
         }
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateAsync([FromForm] AddCategoryDto categoryDto)
         {
             if (!ModelState.IsValid)
@@ -36,12 +55,13 @@ namespace AmazonApiServer.Controllers
             }
             Category category = new()
             {
-                Image = await _imageService.UploadAsync(categoryDto.Image),
+                Image = categoryDto.Image,
                 Icon = categoryDto.Icon,
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
                 Description = categoryDto.Description,
-                ParentId = categoryDto.ParentId
+                ParentId = categoryDto.ParentId,
+                PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
             };
             Category created;
             try
@@ -50,42 +70,42 @@ namespace AmazonApiServer.Controllers
             }
             catch (Exception ex)
             {
-                await _imageService.DeleteAsync(category.Image);
                 return Problem(ex.Message);
             }
             return Ok(created);
         }
 
         [HttpPut("{id}")]
-        [Consumes("multipart/form-data")]
         public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditCategoryDto categoryDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             Category category = new()
             {
                 Id = id,
-                Image = await _imageService.UploadAsync(categoryDto.Image),
+                Image = categoryDto.Image,
                 Icon = categoryDto.Icon,
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
                 Description = categoryDto.Description,
-                ParentId = categoryDto.ParentId
+                ParentId = categoryDto.ParentId,
+                PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
             };
             Category? result;
-            string? oldPicture = (await _categories.GetByIdAsync(id))?.Image;
             try
             {
                 result = await _categories.EditAsync(category);
             }
             catch (Exception ex)
             {
-                await _imageService.DeleteAsync(category.Image);
                 return Problem(ex.Message);
             }
             if (result is null)
             {
                 return NotFound();
             }
-            await _imageService.DeleteAsync(oldPicture!);
             return Ok(result);
         }
 
@@ -105,7 +125,6 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
-            await _imageService.DeleteAsync(deleted.Image);
             return Ok(deleted);
         }
     }

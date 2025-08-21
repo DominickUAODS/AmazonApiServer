@@ -1,4 +1,7 @@
 ﻿using AmazonApiServer.DTOs.Product;
+using AmazonApiServer.DTOs.ProductDetail;
+using AmazonApiServer.DTOs.ProductFeature;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -12,17 +15,41 @@ namespace AmazonApiServer.Controllers
         private readonly IProductRepo _products = products;
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync([FromQuery] ProductsFilter filter)
         {
-            List<Product> productsList = await _products.GetAllAsync();
-            return Ok(productsList);
+            List<Product> productsList = await _products.GetAllAsync(filter);
+            IEnumerable<ProductInListDto> productDtosList = productsList.Select(p => new ProductInListDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Price = p.Price,
+                Discount = p.Discount,
+                Display = p.Displays?.Select(d => d.Image).First() ?? string.Empty,
+            });
+            return Ok(productDtosList);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             Product? product = await _products.GetByIdAsync(id);
-            return product is null ? NotFound() : Ok(product);
+            if (product is null)
+            {
+                return NotFound();
+            }
+            ProductDto productDto = new()
+            {
+                Name = product.Name,
+                Code = product.Code,
+                CategoryId = product.CategoryId,
+                Price = product.Price,
+                Discount = product.Discount,
+                Number = product.Number,
+                Displays = product.Displays?.Select(d => d.Image).ToList() ?? [],
+                Details = product.Details?.Select(d => new ProductDetailDto { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList() ?? [],
+                Features = product.Features?.Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? []
+            };
+            return Ok(productDto);
         }
 
         [HttpPost]
@@ -32,14 +59,17 @@ namespace AmazonApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
-            // todo add image displays
             Product product = new()
             {
+                Name = productDto.Name,
                 Code = productDto.Code,
                 CategoryId = productDto.CategoryId,
                 Price = productDto.Price,
                 Discount = productDto.Discount,
-                Number = productDto.Number
+                Number = productDto.Number,
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
+                Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
             Product created;
             try
@@ -54,16 +84,25 @@ namespace AmazonApiServer.Controllers
         }
 
         [HttpPut("{id}")]
+        [Consumes("multipart/form-data")]
         public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditProductDto productDto)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             Product product = new()
             {
                 Id = id,
+                Name = productDto.Name,
                 Code = productDto.Code,
                 CategoryId = productDto.CategoryId,
                 Price = productDto.Price,
                 Discount = productDto.Discount,
-                Number = productDto.Number
+                Number = productDto.Number,
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
+                Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
             Product? result;
             try
@@ -78,7 +117,6 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
-            // todo delete old images
             return Ok(result);
         }
 
@@ -98,7 +136,6 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
-            // todo delete image
             return Ok(deleted);
         }
     }

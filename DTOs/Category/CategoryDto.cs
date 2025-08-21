@@ -3,11 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.Category
 {
-    public class EditCategoryDto
+    public class CategoryDto
     {
         [JsonPropertyName("image")]
         public required string Image { get; set; }
         [JsonPropertyName("icon")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public CategoryIcon? Icon { get; set; }
         [JsonPropertyName("name")]
         public required string Name { get; set; }

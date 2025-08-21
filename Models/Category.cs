@@ -10,7 +10,7 @@ namespace AmazonApiServer.Models
 		[JsonPropertyName("image")]
 		public required string Image { get; set; }
 		[JsonPropertyName("icon")]
-		public CategoryIcon Icon { get; set; }
+		public CategoryIcon? Icon { get; set; }
 		[JsonPropertyName("name")]
 		public required string Name { get; set; }
 		[JsonPropertyName("is_active")]
