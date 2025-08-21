@@ -7,10 +7,9 @@ namespace AmazonApiServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CategoryController(ICategoryRepo categories, IImageService imageService) : ControllerBase
+    public class CategoryController(ICategoryRepo categories) : ControllerBase
     {
         private readonly ICategoryRepo _categories = categories;
-        private readonly IImageService _imageService = imageService;
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
@@ -57,7 +56,7 @@ namespace AmazonApiServer.Controllers
             }
             Category category = new()
             {
-                Image = await _imageService.UploadAsync(categoryDto.Image),
+                Image = categoryDto.Image,
                 Icon = categoryDto.Icon,
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
@@ -72,7 +71,6 @@ namespace AmazonApiServer.Controllers
             }
             catch (Exception ex)
             {
-                await _imageService.DeleteAsync(category.Image);
                 return Problem(ex.Message);
             }
             return Ok(created);
@@ -89,7 +87,7 @@ namespace AmazonApiServer.Controllers
             Category category = new()
             {
                 Id = id,
-                Image = await _imageService.UploadAsync(categoryDto.Image),
+                Image = categoryDto.Image,
                 Icon = categoryDto.Icon,
                 Name = categoryDto.Name,
                 IsActive = categoryDto.IsActive,
@@ -98,21 +96,18 @@ namespace AmazonApiServer.Controllers
                 PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
             };
             Category? result;
-            string? oldPicture = (await _categories.GetByIdAsync(id))?.Image;
             try
             {
                 result = await _categories.EditAsync(category);
             }
             catch (Exception ex)
             {
-                await _imageService.DeleteAsync(category.Image);
                 return Problem(ex.Message);
             }
             if (result is null)
             {
                 return NotFound();
             }
-            await _imageService.DeleteAsync(oldPicture!);
             return Ok(result);
         }
 
@@ -132,7 +127,6 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
-            await _imageService.DeleteAsync(deleted.Image);
             return Ok(deleted);
         }
     }

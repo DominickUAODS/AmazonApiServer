@@ -1,5 +1,4 @@
-﻿using AmazonApiServer.Attributes;
-using AmazonApiServer.DTOs.ProductDetail;
+﻿using AmazonApiServer.DTOs.ProductDetail;
 using AmazonApiServer.DTOs.ProductFeature;
 using System.Text.Json.Serialization;
 
@@ -20,8 +19,7 @@ namespace AmazonApiServer.DTOs.Product
         [JsonPropertyName("number")]
         public int Number { get; set; }
         [JsonPropertyName("displays")]
-        [FileExtensions("jpg,png")]
-        public required IFormFileCollection Displays { get; set; }
+        public List<string>? Displays { get; set; }
         [JsonPropertyName("product_details")]
         public List<ProductDetailDto>? ProductDetails { get; set; }
         [JsonPropertyName("product_features")]

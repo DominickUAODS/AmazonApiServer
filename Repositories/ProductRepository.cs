@@ -3,7 +3,6 @@ using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace AmazonApiServer.Repositories
 {

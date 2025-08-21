@@ -10,10 +10,9 @@ namespace AmazonApiServer.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductController(IProductRepo products, IImageService imageService) : ControllerBase
+    public class ProductController(IProductRepo products) : ControllerBase
     {
         private readonly IProductRepo _products = products;
-        private readonly IImageService _imageService = imageService;
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync([FromQuery] ProductsFilter filter)
@@ -61,8 +60,6 @@ namespace AmazonApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
-            IEnumerable<Task<string>> uploadTasks = productDto.Displays.Select(_imageService.UploadAsync);
-            string[] displayPaths = await Task.WhenAll(uploadTasks);
             Product product = new()
             {
                 Name = productDto.Name,
@@ -71,7 +68,7 @@ namespace AmazonApiServer.Controllers
                 Price = productDto.Price,
                 Discount = productDto.Discount,
                 Number = productDto.Number,
-                Displays = displayPaths.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
                 Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
                 Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
@@ -82,8 +79,6 @@ namespace AmazonApiServer.Controllers
             }
             catch (Exception ex)
             {
-                IEnumerable<Task> deleteTasks = displayPaths.Select(_imageService.DeleteAsync);
-                await Task.WhenAll(deleteTasks);
                 return Problem(ex.Message);
             }
             return Ok(created);
@@ -97,8 +92,6 @@ namespace AmazonApiServer.Controllers
             {
                 return BadRequest(ModelState);
             }
-            IEnumerable<Task<string>> uploadTasks = productDto.Displays.Select(_imageService.UploadAsync);
-            string[] displayPaths = await Task.WhenAll(uploadTasks);
             Product product = new()
             {
                 Id = id,
@@ -108,28 +101,23 @@ namespace AmazonApiServer.Controllers
                 Price = productDto.Price,
                 Discount = productDto.Discount,
                 Number = productDto.Number,
-                Displays = displayPaths.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
                 Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
                 Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
             Product? result;
-            IEnumerable<string>? oldDisplays = (await _products.GetByIdAsync(id))?.Displays?.Select(d => d.Image);
             try
             {
                 result = await _products.EditAsync(product);
             }
             catch (Exception ex)
             {
-                IEnumerable<Task> deleteTasks = displayPaths.Select(_imageService.DeleteAsync);
-                await Task.WhenAll(deleteTasks);
                 return Problem(ex.Message);
             }
             if (result is null)
             {
                 return NotFound();
             }
-            IEnumerable<Task> deleteOldTasks = oldDisplays?.Select(_imageService.DeleteAsync) ?? [];
-            await Task.WhenAll(deleteOldTasks);
             return Ok(result);
         }
 
@@ -137,7 +125,6 @@ namespace AmazonApiServer.Controllers
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             Product? deleted;
-            IEnumerable<string>? oldDisplays = (await _products.GetByIdAsync(id))?.Displays?.Select(d => d.Image);
             try
             {
                 deleted = await _products.DeleteAsync(id);
@@ -150,8 +137,6 @@ namespace AmazonApiServer.Controllers
             {
                 return NotFound();
             }
-            IEnumerable<Task> deleteOldTasks = oldDisplays?.Select(_imageService.DeleteAsync) ?? [];
-            await Task.WhenAll(deleteOldTasks);
             return Ok(deleted);
         }
     }

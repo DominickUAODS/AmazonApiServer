@@ -2,7 +2,6 @@ using AmazonApiServer.Data;
 using AmazonApiServer.Helpers;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Repositories;
-using AmazonApiServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,10 +28,8 @@ builder.Services.AddCors(options => options.AddPolicy("corspolicy", build =>
 
 builder.Services.AddScoped<IToken, TokenRepository>();
 builder.Services.AddScoped<IEmail, EmailRepository>();
-
 builder.Services.AddScoped<ICategoryRepo, CategoryRepository>();
 builder.Services.AddScoped<IProductRepo, ProductRepository>();
-builder.Services.AddSingleton<IImageService, ImageService>();
 
 var tokenValidationParameters = JwtConfigHelper.GetTokenValidationParameters(builder.Configuration);
 

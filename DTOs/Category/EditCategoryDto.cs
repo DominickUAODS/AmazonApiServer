@@ -1,5 +1,4 @@
-﻿using AmazonApiServer.Attributes;
-using AmazonApiServer.Enums;
+﻿using AmazonApiServer.Enums;
 using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.Category
@@ -7,8 +6,7 @@ namespace AmazonApiServer.DTOs.Category
     public class EditCategoryDto
     {
         [JsonPropertyName("image")]
-        [FileExtensions("jpg,png")]
-        public required IFormFile Image { get; set; }
+        public required string Image { get; set; }
         [JsonPropertyName("icon")]
         public CategoryIcon? Icon { get; set; }
         [JsonPropertyName("name")]
