@@ -52,7 +52,7 @@ namespace AmazonApiServer.Controllers
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);
 
-			var currentUserId = dto.id;
+			var currentUserId = dto.Id;
 			var result = await _users.UpdateUserAsync(dto, currentUserId);
 
 			return result == null

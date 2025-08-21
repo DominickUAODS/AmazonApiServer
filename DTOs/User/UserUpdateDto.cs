@@ -6,7 +6,7 @@ namespace AmazonApiServer.DTOs.User
 	public class UserUpdateDto
 	{
 		[Required]
-		public Guid id { get; set; }
+		public Guid Id { get; set; }
 
 		//[Required]
 		[StringLength(100)]
@@ -31,7 +31,7 @@ namespace AmazonApiServer.DTOs.User
 		public string? Role { get; set; }
 
 		[JsonPropertyName("profile_photo")]
-		public IFormFile? ProfilePhoto { get; set; }
+		public string? ProfilePhoto { get; set; }
 
 		[JsonPropertyName("is_active")]
 		public bool IsActive { get; set; } = true;

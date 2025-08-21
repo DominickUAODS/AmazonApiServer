@@ -10,12 +10,10 @@ namespace AmazonApiServer.Repositories
 	public class UserRepository : IUser
 	{
 		private readonly ApplicationContext _context;
-		private readonly IImageService _imageService;
 
-		public UserRepository(ApplicationContext context, IImageService imageService)
+		public UserRepository(ApplicationContext context)
 		{
 			_context = context;
-			_imageService = imageService;
 		}
 
 		public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
@@ -50,7 +48,7 @@ namespace AmazonApiServer.Repositories
 			if (role == null) return null;
 
 			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
-			var user = await dto.ToUserAsync(hashedPassword, role.Id, _imageService);
+			var user = dto.ToUser(hashedPassword, role.Id);
 
 			_context.Users.Add(user);
 			await _context.SaveChangesAsync();
@@ -60,15 +58,15 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<UserDto?> UpdateUserAsync(UserUpdateDto dto, Guid currentUserId)
 		{
-			if (dto.id != currentUserId) return null;
+			if (dto.Id != currentUserId) return null;
 
-			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.id);
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.Id);
 			if (user == null) return null;
 
 			var role = await _context.Roles.FirstOrDefaultAsync(u => u.Name == dto.Role);
 			if (role == null) return null;
 
-			await user.UpdateFromDtoAsync(dto, role.Id, _imageService);
+			user.UpdateFromDto(dto, role.Id);
 
 			// при смене ЛЮБЫХ данных блочим и отзываем токены
 			// нужен сервис по удалению просоченных или отозванных токенов
