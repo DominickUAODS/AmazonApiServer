@@ -66,7 +66,7 @@ namespace AmazonApiServer.Controllers
 		{
 			var exists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
 			if (exists)
-				return BadRequest("User already registered");
+				return this.BadRequest(new { error = "User already registered" });
 
 			var code = CodeGenerator.Generate6DigitCode();
 			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
@@ -101,7 +101,7 @@ namespace AmazonApiServer.Controllers
 
 			if (entry == null || entry.IsExpired || entry.Code != dto.Code)
 			{
-				return BadRequest("Invalid or expired code.");
+				return this.BadRequest(new { error = "Invalid or expired code." });
 			}
 
 			return Ok("Code verified successfully.");
@@ -119,7 +119,7 @@ namespace AmazonApiServer.Controllers
 			// получаем роль "Customer"
 			var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
 			if (role == null)
-				return StatusCode(500, "Role 'Customer' not found");
+				return StatusCode(500, new { error = "Role 'Customer' not found" });
 
 			var user = new User
 			{
@@ -157,7 +157,7 @@ namespace AmazonApiServer.Controllers
 
 			if (oldToken == null || oldToken.ExpiresAt < DateTime.UtcNow)
 				return Unauthorized(new { error = "Invalid or expired refresh token" });
-			
+
 			oldToken.IsRevoked = true;
 
 			var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
@@ -280,8 +280,8 @@ namespace AmazonApiServer.Controllers
 
 			dto.Purpose = dto.Purpose.ToLower();
 
-			if (dto.Purpose != "register" && dto.Purpose != "reset")
-				return BadRequest("Invalid purpose. Allowed values: register, reset");
+			if (dto.Purpose != "register" && dto.Purpose != "reset" && dto.Purpose != "change")
+				return BadRequest("Invalid purpose. Allowed values: register, reset, change");
 
 			// Проверка существования пользователя
 			var userExists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
@@ -289,6 +289,8 @@ namespace AmazonApiServer.Controllers
 			if (dto.Purpose == "register" && userExists)
 				return BadRequest("User with this email already exists.");
 			if (dto.Purpose == "reset" && !userExists)
+				return NotFound("User with this email not found.");
+			if (dto.Purpose == "change" && !userExists)
 				return NotFound("User with this email not found.");
 
 			// Ищем запись с кодом
@@ -313,16 +315,21 @@ namespace AmazonApiServer.Controllers
 			await _context.SaveChangesAsync();
 
 			// Локализация и тексты
-			string title, subtitle;
+			string title = "", subtitle = "";
 			if (dto.Purpose == "register")
 			{
 				title = "Registration Confirmation";
 				subtitle = "Here is your confirmation code for registration:";
 			}
-			else // reset
+			if (dto.Purpose == "reset")
 			{
 				title = "Password Reset";
 				subtitle = "Here is your password reset code:";
+			}
+			if (dto.Purpose == "change")
+			{
+				title = "Change Email";
+				subtitle = "Here is your password to proceed change email:";
 			}
 
 			await _emailService.SendConfirmationCodeAsync(dto.Email, code, title, subtitle);
@@ -335,7 +342,7 @@ namespace AmazonApiServer.Controllers
 		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
 		{
 			// 1. Получаем ID пользователя из токена
-			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
 			if (string.IsNullOrEmpty(userIdClaim))
 				return Unauthorized("Invalid token");
 
@@ -366,7 +373,46 @@ namespace AmazonApiServer.Controllers
 
 			await _context.SaveChangesAsync();
 
-			return Ok("Password changed successfully. Please log in again.");
+			return Ok(new { message = "Password changed successfully. Please log in again." });
+		}
+
+		[HttpPost("change-email")]
+		[Authorize]
+		public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailDto dto)
+		{
+			// 1. Получаем ID пользователя из токена
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim))
+				return Unauthorized(new { message = "Invalid token" });
+
+			var userId = Guid.Parse(userIdClaim);
+
+			// 2. Находим пользователя в БД
+			var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+			if (user == null)
+				return NotFound(new { message = "User not found" });
+
+			//// 3. Проверяем текущий пароль
+			//if (!PasswordHasher.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
+			//	return BadRequest("Current password is incorrect");
+
+			//// 4. Проверяем сложность нового пароля
+			//if (!PasswordValidator.IsValid(dto.NewPassword))
+			//	return BadRequest("Password must be at least 8 characters long and contain upper, lower letters and digits.");
+
+			// 5. Меняем email
+			user.Email = dto.NewEmail;
+
+			await _context.SaveChangesAsync();
+
+			// 6. (Опционально) Отзываем все refresh-токены
+			var tokens = _context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked);
+			foreach (var t in tokens)
+				t.IsRevoked = true;
+
+			await _context.SaveChangesAsync();
+
+			return Ok(new { message = "Email changed successfully. Please log in again." });
 		}
 	}
 }

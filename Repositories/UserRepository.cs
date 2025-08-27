@@ -2,6 +2,7 @@
 using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Extensions;
 using AmazonApiServer.Interfaces;
+using AmazonApiServer.Models;
 using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -91,12 +92,13 @@ namespace AmazonApiServer.Repositories
 			return user.ToDto();
 		}
 
-		public async Task<UserDto?> MarkUnDeleteUserAsync(Guid id)
+		public async Task<UserDto?> ToggleStatusAsync(Guid id)
 		{
 			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null) return null;
 
-			user.IsActive = true;
+			user.IsActive = !user.IsActive;
+
 			await _context.SaveChangesAsync();
 
 			return user.ToDto();
@@ -107,14 +109,38 @@ namespace AmazonApiServer.Repositories
 			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
 			if (user == null) return null;
 
-			var admin = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
+			var admin = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Administrator");
 			var customer = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
 			if (admin == null || customer == null) return null;
 
-			user.RoleId = user.Role?.Name == "Admin" ? customer.Id : admin.Id;
+			user.RoleId = user.Role?.Name == "Administrator" ? customer.Id : admin.Id;
 			await _context.SaveChangesAsync();
 
 			return user.ToDto();
+		}
+
+		public async Task<IEnumerable<UserDto>> SearchUsersAsync(string query, string? roleName)
+		{
+			var usersQuery = _context.Users.Include(u => u.Role).AsQueryable();
+
+			if (!string.IsNullOrWhiteSpace(query))
+			{
+				var q = query.ToLower();
+				usersQuery = usersQuery.Where(u =>
+					u.FirstName.ToLower().Contains(q) ||
+					u.LastName.ToLower().Contains(q) ||
+					u.Email.ToLower().Contains(q)
+				);
+			}
+
+			if (!string.IsNullOrWhiteSpace(roleName))
+			{
+				usersQuery = usersQuery.Where(u => u.Role != null && u.Role.Name == roleName);
+			}
+
+			var users = await usersQuery.OrderBy(u => u.FirstName).ToListAsync();
+
+			return users.Select(u => u.ToDto());
 		}
 	}
 }

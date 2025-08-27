@@ -45,6 +45,7 @@ builder.Services.AddAuthentication(options =>
 	options.RequireHttpsMetadata = true;
 	options.SaveToken = true;
 	options.TokenValidationParameters = tokenValidationParameters;
+	options.MapInboundClaims = false;
 });
 
 builder.Services.AddControllers();

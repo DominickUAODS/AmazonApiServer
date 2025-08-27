@@ -1,5 +1,6 @@
 ﻿using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Interfaces;
+using AmazonApiServer.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpGet]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "Administrator")]
 		public async Task<IActionResult> GetAllUsers()
 		{
 			var result = await _users.GetAllUsersAsync();
@@ -65,23 +66,37 @@ namespace AmazonApiServer.Controllers
 		public async Task<IActionResult> DeleteUser(Guid id)
 		{
 			var result = await _users.MarkDeleteUserAsync(id);
-			return result == null ? NotFound() : Ok(result);
+			return result == null
+				? StatusCode(404, new { error = "User not found" })
+				: Ok(result);
 		}
 
-		[HttpPatch("{id}/restore")]
-		[Authorize(Roles = "Admin")]
-		public async Task<IActionResult> RestoreUser(Guid id)
+		[HttpPatch("{id}/toggle-status")]
+		[Authorize(Roles = "Administrator")]
+		public async Task<IActionResult> ToggleUserStatus(Guid id)
 		{
-			var result = await _users.MarkUnDeleteUserAsync(id);
-			return result == null ? NotFound() : Ok(result);
+			var result = await _users.ToggleStatusAsync(id);
+			return result == null
+				? StatusCode(404, new { error = "User not found" })
+				: Ok(result);
 		}
 
 		[HttpPatch("{id}/toggle-role")]
-		[Authorize(Roles = "Admin")]
+		[Authorize(Roles = "Administrator")]
 		public async Task<IActionResult> ToggleRole(Guid id)
 		{
 			var result = await _users.ToggleRoleAsync(id);
-			return result == null ? NotFound() : Ok(result);
+			return result == null
+				? StatusCode(404, new { error = "User not found" })
+				: Ok(result);
+		}
+
+		[HttpGet("search")]
+		[Authorize(Roles = "Administrator")]
+		public async Task<IActionResult> SearchUsers([FromQuery] string query, [FromQuery] string? role)
+		{
+			var users = await _users.SearchUsersAsync(query, role);
+			return Ok(users);
 		}
 	}
 }
