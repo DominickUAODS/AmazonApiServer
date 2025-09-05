@@ -55,6 +55,27 @@ namespace AmazonApiServer.Repositories
                 List<Guid> categoryIds = await GetSubCategoryIdsAsync(filter.CategoryId.Value);
                 query = query.Where(p => p.CategoryId.HasValue && categoryIds.Contains(p.CategoryId.Value));
             }
+            if (filter.OnlyDiscounted)
+            {
+                query = query.Where(p => p.Discount != null);
+            }
+            if (filter.MinPrice is not null)
+            {
+                query = query.Where(p => p.Price >= filter.MinPrice);
+            }
+            if (filter.MaxPrice is not null)
+            {
+                query = query.Where(p => p.Price <= filter.MaxPrice);
+            }
+            if (filter.Ratings?.Count > 0)
+            {
+                query = query.Include(e => e.Reviews);
+                query = query.Where(p => (p.Reviews != null && p.Reviews.Count > 0) && filter.Ratings.Contains((int)double.Round(p.Reviews.Average(r => r.Stars))));
+            }
+            if (filter.IncludeReviews)
+            {
+                query = query.Include(e => e.Reviews);
+            }
             query = query.Include(e => e.Displays);
             return await query.ToListAsync();
         }

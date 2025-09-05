@@ -25,6 +25,8 @@ namespace AmazonApiServer.Controllers
                 Price = p.Price,
                 Discount = p.Discount,
                 Display = p.Displays?.Select(d => d.Image).First() ?? string.Empty,
+                Rating = filter.IncludeReviews ? (p.Reviews?.Count > 0 ? p.Reviews.Average(r => r.Stars) : 0) : null,
+                Comments = filter.IncludeReviews ? p.Reviews?.Count : null
             });
             return Ok(productDtosList);
         }

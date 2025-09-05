@@ -7,6 +7,15 @@ namespace AmazonApiServer.Filters
         [JsonPropertyName("category")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? CategoryId { get; set; }
-        // todo more filter options
+        [JsonPropertyName("include_reviews")]
+        public bool IncludeReviews { get; set; } = true;
+        [JsonPropertyName("only_discounted")]
+        public bool OnlyDiscounted { get; set; } = false;
+        [JsonPropertyName("min_price")]
+        public double? MinPrice { get; set; }
+        [JsonPropertyName("max_price")]
+        public double? MaxPrice { get; set; }
+        [JsonPropertyName("ratings")]
+        public List<int>? Ratings { get; set; }
     }
 }
