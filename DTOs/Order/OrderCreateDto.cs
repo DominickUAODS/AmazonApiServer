@@ -1,4 +1,5 @@
-﻿using AmazonApiServer.DTOs.OrderItem;
+﻿using System.Text.Json.Serialization;
+using AmazonApiServer.DTOs.OrderItem;
 using AmazonApiServer.Enums;
 
 namespace AmazonApiServer.DTOs.Order

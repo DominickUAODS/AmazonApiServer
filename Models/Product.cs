@@ -25,7 +25,7 @@ namespace AmazonApiServer.Models
         [JsonIgnore]
         public List<Review>? Reviews { get; set; }
         [JsonIgnore]
-        public List<ProductDisplay>? Displays { get; set; }
+        public List<ProductDisplay> Displays { get; set; } = [];
         [JsonIgnore]
         public List<ProductDetail>? Details { get; set; }
         [JsonIgnore]

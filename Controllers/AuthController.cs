@@ -54,13 +54,14 @@ namespace AmazonApiServer.Controllers
 					first_name = user.FirstName,
 					last_name = user.LastName,
 					email = user.Email,
-					role = user.Role?.Name
+					role = user.Role?.Name,
+					profile_photo = user.ProfilePhoto
 				}
 			});
 		}
 
 		// Шаг 1: Запрос регистрации — email + password
-		[HttpPost("register/start")]
+		[HttpPost("register-start")]
 		public async Task<IActionResult> RegisterStart([FromBody] RegistrationRequestDto dto)
 		{
 			var exists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
@@ -107,7 +108,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		// Шаг 3: Завершение регистрации (first + last name)
-		[HttpPost("register/complete")]
+		[HttpPost("register-complete")]
 		public async Task<IActionResult> CompleteRegistration([FromBody] CompleteRegistrationDto dto)
 		{
 			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);
@@ -128,7 +129,7 @@ namespace AmazonApiServer.Controllers
 				FirstName = dto.FirstName,
 				LastName = dto.LastName,
 				IsActive = true,
-				ProfilePhoto = "/images/default.png",
+				ProfilePhoto = "",
 				RegistrationDate = DateTime.UtcNow,
 				RoleId = role.Id
 			};
@@ -220,7 +221,7 @@ namespace AmazonApiServer.Controllers
 		//	return true;
 		//}
 
-		[HttpPost("reset/start")]
+		[HttpPost("reset-start")]
 		public async Task<IActionResult> StartPasswordReset([FromBody] PasswordResetStartDto dto)
 		{
 			var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
@@ -248,7 +249,7 @@ namespace AmazonApiServer.Controllers
 			return Ok("Password reset code sent to your email.");
 		}
 
-		[HttpPost("reset/complete")]
+		[HttpPost("reset-complete")]
 		public async Task<IActionResult> CompletePasswordReset([FromBody] PasswordResetCompleteDto dto)
 		{
 			var entry = await _context.EmailVerificationCodes.FirstOrDefaultAsync(e => e.Email == dto.Email);

@@ -2,7 +2,6 @@
 using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Extensions;
 using AmazonApiServer.Interfaces;
-using AmazonApiServer.Models;
 using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,9 +58,9 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<UserDto?> UpdateUserAsync(UserUpdateDto dto, Guid currentUserId)
 		{
-			if (dto.id != currentUserId) return null;
+			if (dto.Id != currentUserId) return null;
 
-			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.id);
+			var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == dto.Id);
 			if (user == null) return null;
 
 			var role = await _context.Roles.FirstOrDefaultAsync(u => u.Name == dto.Role);

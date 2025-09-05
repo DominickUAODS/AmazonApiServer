@@ -6,7 +6,7 @@ namespace AmazonApiServer.DTOs.User
 	public class UserUpdateDto
 	{
 		[Required]
-		public Guid id { get; set; }
+		public Guid Id { get; set; }
 
 		//[Required]
 		[StringLength(100)]

@@ -1,9 +1,10 @@
-﻿using AmazonApiServer.Models;
-using AmazonApiServer.Services;
-using AmazonApiServer.DTOs.User;
+﻿using AmazonApiServer.DTOs.Order;
 using AmazonApiServer.DTOs.Review;
 using AmazonApiServer.DTOs.ReviewReview;
-using AmazonApiServer.DTOs.Order;
+using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Interfaces;
+using AmazonApiServer.Models;
+using AmazonApiServer.Services;
 
 namespace AmazonApiServer.Extensions
 {
@@ -39,7 +40,7 @@ namespace AmazonApiServer.Extensions
 				Email = dto.Email,
 				PasswordHash = hashedPassword,
 				RoleId = roleId,
-				ProfilePhoto = dto.ProfilePhoto ?? "/images/users/default.jpg",
+				ProfilePhoto = "",
 				IsActive = dto.IsActive
 				//RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow)
 			};

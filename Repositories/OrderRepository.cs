@@ -1,8 +1,6 @@
 ﻿using AmazonApiServer.Data;
-using AmazonApiServer.DTOs;
 using AmazonApiServer.DTOs.Order;
 using AmazonApiServer.DTOs.OrderItem;
-using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Enums;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
@@ -10,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AmazonApiServer.Repositories
 {
-	public class OrderService : IOrder
+	public class OrderRepository : IOrder
 	{
 		private readonly ApplicationContext _context;
 
-		public OrderService(ApplicationContext context)
+		public OrderRepository(ApplicationContext context)
 		{
 			_context = context;
 		}
 
-		public async Task<IEnumerable<OrderDto>> GetAllAsync()
+		public async Task<IEnumerable<OrderDto>> GetAllOrdersAsync()
 		{
-			return await _context.Orders?
+			return await _context.Orders
 				.Include(o => o.OrderItems)
 				.ThenInclude(i => i.Product)
 				.Select(o => new OrderDto
@@ -37,18 +35,19 @@ namespace AmazonApiServer.Repositories
 					{
 						ProductId = i.ProductId,
 						ProductName = i.Product!.Code,
+						ProductImage = i.Product.Displays.FirstOrDefault().Image ?? string.Empty,
 						Number = i.Number
 					}).ToList()
 				})
 				.ToListAsync();
 		}
 
-		public async Task<OrderDto?> GetByIdAsync(Guid id)
+		public async Task<OrderDto?> GetOrderByIdAsync(Guid orderId)
 		{
 			var o = await _context.Orders
 				.Include(o => o.OrderItems)!
 				.ThenInclude(i => i.Product)
-				.FirstOrDefaultAsync(o => o.Id == id);
+				.FirstOrDefaultAsync(o => o.Id == orderId);
 
 			if (o == null) return null;
 
@@ -61,16 +60,17 @@ namespace AmazonApiServer.Repositories
 				PaymentType = o.PaymentType.ToString(),
 				OrderStatus = o.Status.ToString(),
 				OrderedOn = o.OrderedOn,
-				Items = o.OrderItems!.Select(i => new OrderItemDto
+				Items = o.OrderItems.Select(i => new OrderItemDto
 				{
 					ProductId = i.ProductId,
 					ProductName = i.Product?.Code ?? "",
+					ProductImage = i.Product!.Displays.FirstOrDefault().Image ?? string.Empty,
 					Number = i.Number
 				}).ToList()
 			};
 		}
 
-		public async Task<OrderDto?> CreateAsync(OrderCreateDto dto)
+		public async Task<OrderDto?> CreateOrderAsync(OrderCreateDto dto)
 		{
 			var order = new Order
 			{
@@ -92,10 +92,10 @@ namespace AmazonApiServer.Repositories
 			_context.Orders.Add(order);
 			await _context.SaveChangesAsync();
 
-			return await GetByIdAsync(order.Id);
+			return await GetOrderByIdAsync(order.Id);
 		}
 
-		public async Task<OrderDto?> UpdateAsync(OrderUpdateDto dto)
+		public async Task<OrderDto?> UpdateOrderAsync(OrderUpdateDto dto)
 		{
 			var order = await _context.Orders
 				.Include(o => o.OrderItems)
@@ -116,10 +116,10 @@ namespace AmazonApiServer.Repositories
 			}).ToList();
 
 			await _context.SaveChangesAsync();
-			return await GetByIdAsync(order.Id);
+			return await GetOrderByIdAsync(order.Id);
 		}
 
-		public async Task<bool> DeleteAsync(Guid id)
+		public async Task<bool> DeleteOrderAsync(Guid id)
 		{
 			var order = await _context.Orders.FindAsync(id);
 			if (order == null) return false;
@@ -128,6 +128,32 @@ namespace AmazonApiServer.Repositories
 			await _context.SaveChangesAsync();
 			return true;
 		}
-	}
 
+		public async Task<IEnumerable<OrderDto?>> GetOrdersByUserIdAsync(Guid userId)
+		{
+			var orders = await _context.Orders
+				.Where(o => o.UserId == userId)
+				.Include(o => o.OrderItems)
+				.ThenInclude(i => i.Product)
+				.ToListAsync();
+
+			return orders.Select(o => new OrderDto
+			{
+				Id = o.Id,
+				UserId = o.UserId,
+				RecipientsName = o.RecipientsName,
+				Address = o.Address,
+				PaymentType = o.PaymentType.ToString(),
+				OrderStatus = o.Status.ToString(),
+				OrderedOn = o.OrderedOn,
+				Items = o.OrderItems.Select(i => new OrderItemDto
+				{
+					ProductId = i.ProductId,
+					ProductName = i.Product?.Code ?? string.Empty,
+					ProductImage = i.Product!.Displays.FirstOrDefault().Image ?? string.Empty,
+					Number = i.Number
+				}).ToList()
+			});
+		}
+	}
 }

@@ -20,7 +20,7 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> GetAll()
 		{
-			var result = await _orders.GetAllAsync();
+			var result = await _orders.GetAllOrdersAsync();
 			return Ok(result);
 		}
 
@@ -28,7 +28,7 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> GetById(Guid id)
 		{
-			var result = await _orders.GetByIdAsync(id);
+			var result = await _orders.GetOrderByIdAsync(id);
 			return result == null ? NotFound() : Ok(result);
 		}
 
@@ -36,7 +36,7 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Create(OrderCreateDto dto)
 		{
-			var result = await _orders.CreateAsync(dto);
+			var result = await _orders.CreateOrderAsync(dto);
 			return result == null ? StatusCode(500) : CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 		}
 
@@ -44,7 +44,7 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Update(OrderUpdateDto dto)
 		{
-			var result = await _orders.UpdateAsync(dto);
+			var result = await _orders.UpdateOrderAsync(dto);
 			return result == null ? NotFound() : Ok(result);
 		}
 
@@ -52,7 +52,7 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Delete(Guid id)
 		{
-			var success = await _orders.DeleteAsync(id);
+			var success = await _orders.DeleteOrderAsync(id);
 			return success ? Ok() : NotFound();
 		}
 	}
