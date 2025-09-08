@@ -32,10 +32,20 @@ namespace AmazonApiServer.Controllers
 			return result == null ? NotFound() : Ok(result);
 		}
 
+		[HttpGet("by-user/{userId}")]
+		[Authorize]
+		public async Task<IActionResult> GetByUserId(Guid userId)
+		{
+			var results = await _orders.GetOrdersByUserIdAsync(userId);
+			return results == null ? NotFound() : Ok(results);
+		}
+
 		[HttpPost]
 		[Authorize]
 		public async Task<IActionResult> Create(OrderCreateDto dto)
 		{
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
 			var result = await _orders.CreateOrderAsync(dto);
 			return result == null ? StatusCode(500) : CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
 		}
@@ -44,6 +54,8 @@ namespace AmazonApiServer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Update(OrderUpdateDto dto)
 		{
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
 			var result = await _orders.UpdateOrderAsync(dto);
 			return result == null ? NotFound() : Ok(result);
 		}

@@ -27,6 +27,9 @@ namespace AmazonApiServer.Data
 		public DbSet<PropertyKey> PropertyKeys { get; set; }
 		public DbSet<ReviewImage> ReviewImages { get; set; }
 		public DbSet<ReviewTag> ReviewTags { get; set; }
+		public DbSet<Country> Countries { get; set; }
+		public DbSet<State> States { get; set; }
+		public DbSet<DeliveryAddress> DeliveryAddresses { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
@@ -47,7 +50,7 @@ namespace AmazonApiServer.Data
 			modelBuilder.Entity<Product>().HasOne(e => e.Category).WithMany(e => e.Products).OnDelete(DeleteBehavior.SetNull);
 			modelBuilder.Entity<Product>().HasMany(e => e.OrderItems).WithOne(e => e.Product).OnDelete(DeleteBehavior.NoAction);
 
-			modelBuilder.Entity<OrderItem>().HasOne(e => e.Order).WithMany(e => e.OrderItems).OnDelete(DeleteBehavior.NoAction);
+			modelBuilder.Entity<OrderItem>().HasOne(e => e.Order).WithMany(e => e.OrderItems).OnDelete(DeleteBehavior.Cascade);
 
 			modelBuilder.Entity<Category>().HasMany(e => e.PropertyKeys).WithOne(e => e.Category).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<Category>().HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);

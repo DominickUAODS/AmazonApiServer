@@ -1,4 +1,5 @@
 ﻿using AmazonApiServer.Data;
+using AmazonApiServer.DTOs.DeliveryAddress;
 using AmazonApiServer.DTOs.Order;
 using AmazonApiServer.DTOs.OrderItem;
 using AmazonApiServer.Enums;
@@ -22,12 +23,27 @@ namespace AmazonApiServer.Repositories
 			return await _context.Orders
 				.Include(o => o.OrderItems)
 				.ThenInclude(i => i.Product)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.Country)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.State)
 				.Select(o => new OrderDto
 				{
 					Id = o.Id,
 					UserId = o.UserId,
-					RecipientsName = o.RecipientsName,
-					Address = o.Address,
+					RecipientFirstName = o.RecipientFirstName,
+					RecipientLastName = o.RecipientLastName,
+					RecipientEmail = o.RecipientEmail,
+					Address = new DeliveryAddressDto
+					{
+						Id = o.DeliveryAddress.Id,
+						CountryId = o.DeliveryAddress.CountryId,
+						CountryName = o.DeliveryAddress.Country.Name,
+						StateId = o.DeliveryAddress.StateId,
+						StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
+						City = o.DeliveryAddress.City,
+						Postcode = o.DeliveryAddress.Postcode
+					},
 					PaymentType = o.PaymentType.ToString(),
 					OrderStatus = o.Status.ToString(),
 					OrderedOn = o.OrderedOn,
@@ -45,8 +61,13 @@ namespace AmazonApiServer.Repositories
 		public async Task<OrderDto?> GetOrderByIdAsync(Guid orderId)
 		{
 			var o = await _context.Orders
-				.Include(o => o.OrderItems)!
-				.ThenInclude(i => i.Product)
+				.Include(o => o.OrderItems)
+					.ThenInclude(i => i.Product)
+						.ThenInclude(p => p.Displays)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.Country)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.State)
 				.FirstOrDefaultAsync(o => o.Id == orderId);
 
 			if (o == null) return null;
@@ -55,8 +76,20 @@ namespace AmazonApiServer.Repositories
 			{
 				Id = o.Id,
 				UserId = o.UserId,
-				RecipientsName = o.RecipientsName,
-				Address = o.Address,
+				RecipientFirstName = o.RecipientFirstName,
+				RecipientLastName = o.RecipientLastName,
+				RecipientEmail = o.RecipientEmail,
+				DeliveryAddressId = o.DeliveryAddressId,
+				Address = new DeliveryAddressDto
+				{
+					Id = o.DeliveryAddress.Id,
+					CountryId = o.DeliveryAddress.CountryId,
+					CountryName = o.DeliveryAddress.Country.Name,
+					StateId = o.DeliveryAddress.StateId,
+					StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
+					City = o.DeliveryAddress.City,
+					Postcode = o.DeliveryAddress.Postcode
+				},
 				PaymentType = o.PaymentType.ToString(),
 				OrderStatus = o.Status.ToString(),
 				OrderedOn = o.OrderedOn,
@@ -64,7 +97,7 @@ namespace AmazonApiServer.Repositories
 				{
 					ProductId = i.ProductId,
 					ProductName = i.Product?.Code ?? "",
-					ProductImage = i.Product!.Displays.FirstOrDefault().Image ?? string.Empty,
+					ProductImage = i.Product!.Displays.FirstOrDefault()?.Image ?? string.Empty,
 					Number = i.Number
 				}).ToList()
 			};
@@ -72,24 +105,42 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<OrderDto?> CreateOrderAsync(OrderCreateDto dto)
 		{
+			var deliveryAddress = new DeliveryAddress
+			{
+				Id = Guid.NewGuid(),
+				CountryId = dto.Address.CountryId,
+				StateId = dto.Address.StateId,
+				City = dto.Address.City,
+				Postcode = dto.Address.Postcode
+			};
+			_context.DeliveryAddresses.Add(deliveryAddress);
+
 			var order = new Order
 			{
 				Id = Guid.NewGuid(),
 				UserId = dto.UserId,
-				RecipientsName = dto.RecipientsName,
-				Address = dto.Address,
+				RecipientFirstName = dto.RecipientFirstName,
+				RecipientLastName = dto.RecipientLastName,
+				RecipientEmail = dto.RecipientEmail,
+				DeliveryAddressId = deliveryAddress.Id,
+				DeliveryAddress = deliveryAddress,
 				PaymentType = dto.PaymentType,
 				OrderedOn = DateTime.UtcNow,
-				Status = OrderStatus.RECEIVED,
-				OrderItems = dto.Items.Select(i => new OrderItem
-				{
-					Id = Guid.NewGuid(),
-					ProductId = i.ProductId,
-					Number = i.Number
-				}).ToList()
+				Status = OrderStatus.RECEIVED
 			};
 
 			_context.Orders.Add(order);
+			await _context.SaveChangesAsync();
+
+			var orderItems = dto.Items.Select(i => new OrderItem
+			{
+				Id = Guid.NewGuid(),
+				OrderId = order.Id,
+				ProductId = i.ProductId,
+				Number = i.Number
+			}).ToList();
+
+			_context.OrderItems.AddRange(orderItems);
 			await _context.SaveChangesAsync();
 
 			return await GetOrderByIdAsync(order.Id);
@@ -99,23 +150,39 @@ namespace AmazonApiServer.Repositories
 		{
 			var order = await _context.Orders
 				.Include(o => o.OrderItems)
+				.Include(o => o.DeliveryAddress)
 				.FirstOrDefaultAsync(o => o.Id == dto.Id);
 
 			if (order == null) return null;
 
-			order.RecipientsName = dto.RecipientsName;
-			order.Address = dto.Address;
+			order.RecipientFirstName = dto.RecipientFirstName;
+			order.RecipientLastName = dto.RecipientLastName;
+			order.RecipientEmail = dto.RecipientEmail;
 			order.PaymentType = dto.PaymentType;
 			order.Status = dto.Status;
 
-			order.OrderItems = dto.Items.Select(i => new OrderItem
+			if (order.DeliveryAddress != null && dto.Address != null)
+			{
+				order.DeliveryAddress.CountryId = dto.Address.CountryId;
+				order.DeliveryAddress.StateId = dto.Address.StateId;
+				order.DeliveryAddress.City = dto.Address.City;
+				order.DeliveryAddress.Postcode = dto.Address.Postcode;
+			}
+
+			_context.OrderItems.RemoveRange(order.OrderItems);
+
+			var newItems = dto.Items.Select(i => new OrderItem
 			{
 				Id = Guid.NewGuid(),
+				OrderId = order.Id,
 				ProductId = i.ProductId,
 				Number = i.Number
 			}).ToList();
 
+			_context.OrderItems.AddRange(newItems);
+
 			await _context.SaveChangesAsync();
+
 			return await GetOrderByIdAsync(order.Id);
 		}
 
@@ -134,26 +201,46 @@ namespace AmazonApiServer.Repositories
 			var orders = await _context.Orders
 				.Where(o => o.UserId == userId)
 				.Include(o => o.OrderItems)
-				.ThenInclude(i => i.Product)
+					.ThenInclude(i => i.Product)
+						.ThenInclude(p => p.Displays)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.Country)
+				.Include(o => o.DeliveryAddress)
+					.ThenInclude(a => a.State)
 				.ToListAsync();
 
 			return orders.Select(o => new OrderDto
 			{
 				Id = o.Id,
 				UserId = o.UserId,
-				RecipientsName = o.RecipientsName,
-				Address = o.Address,
+				RecipientFirstName = o.RecipientFirstName,
+				RecipientLastName = o.RecipientLastName,
+				RecipientEmail = o.RecipientEmail,
+				DeliveryAddressId = o.DeliveryAddressId,
+				Address = o.DeliveryAddress == null
+					? null
+					: new DeliveryAddressDto
+					{
+						Id = o.DeliveryAddress.Id,
+						CountryId = o.DeliveryAddress.CountryId,
+						CountryName = o.DeliveryAddress.Country.Name,
+						StateId = o.DeliveryAddress.StateId,
+						StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
+						City = o.DeliveryAddress.City,
+						Postcode = o.DeliveryAddress.Postcode
+					},
 				PaymentType = o.PaymentType.ToString(),
 				OrderStatus = o.Status.ToString(),
 				OrderedOn = o.OrderedOn,
 				Items = o.OrderItems.Select(i => new OrderItemDto
 				{
 					ProductId = i.ProductId,
-					ProductName = i.Product?.Code ?? string.Empty,
-					ProductImage = i.Product!.Displays.FirstOrDefault().Image ?? string.Empty,
+					ProductName = i.Product?.Code ?? "",
+					ProductImage = i.Product?.Displays.FirstOrDefault()?.Image ?? string.Empty,
 					Number = i.Number
 				}).ToList()
 			});
 		}
+
 	}
 }

@@ -19,11 +19,18 @@ namespace AmazonApiServer.Models
 		[JsonPropertyName("ordered_on")]
 		public DateTime OrderedOn { get; set; }
 
-		[JsonPropertyName("recipients_name")]
-		public required string RecipientsName { get; set; }
+		[JsonPropertyName("recipient_first_name")]
+		public required string RecipientFirstName { get; set; }
 
+		[JsonPropertyName("recipient_last_name")]
+		public required string RecipientLastName { get; set; }
+
+		[JsonPropertyName("recipient_email")]
+		public required string RecipientEmail { get; set; }
+
+		public required DeliveryAddress DeliveryAddress { get; set; }
 		[JsonPropertyName("address")]
-		public required string Address { get; set; }
+		public required Guid DeliveryAddressId { get; set; }
 
 		[JsonPropertyName("payment_type")]
 		public PaymentType PaymentType { get; set; }
