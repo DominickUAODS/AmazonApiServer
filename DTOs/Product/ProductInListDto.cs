@@ -11,8 +11,15 @@ namespace AmazonApiServer.DTOs.Product
         [JsonPropertyName("price")]
         public float Price { get; set; }
         [JsonPropertyName("discount")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public int? Discount { get; set; }
         [JsonPropertyName("display")]
         public required string Display { get; set; }
+        [JsonPropertyName("rating")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public double? Rating { get; set; }
+        [JsonPropertyName("comments")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public int? Comments { get; set; }
     }
 }
