@@ -23,7 +23,7 @@ namespace AmazonApiServer.DTOs.Product
         public int Number { get; set; }
         [JsonPropertyName("reviews")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public List<ReviewByProductDto>? Reviews { get; set; }
+        public List<ReviewDto>? Reviews { get; set; }
         [JsonPropertyName("displays")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<string>? Displays { get; set; }

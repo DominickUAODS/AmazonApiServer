@@ -5,14 +5,14 @@ namespace AmazonApiServer.Extensions
 {
 	public static class ReviewReviewExtensions
 	{
-		public static ReviewReviewDto ToDto(this ReviewReview rr)
+		public static ReviewReviewDto ToDto(this ReviewReview reviewReview)
 		{
 			return new ReviewReviewDto
 			{
-				Id = rr.Id,
-				UserId = rr.UserId,
-				ReviewId = rr.ReviewId,
-				IsHelpful = rr.IsHelpful
+				Id = reviewReview.Id,
+				UserId = reviewReview.UserId,
+				ReviewId = reviewReview.ReviewId,
+				IsHelpful = reviewReview.IsHelpful
 			};
 		}
 
@@ -27,9 +27,9 @@ namespace AmazonApiServer.Extensions
 			};
 		}
 
-		public static void UpdateFromDto(this ReviewReview rr, ReviewReviewUpdateDto dto)
+		public static void UpdateFromDto(this ReviewReview reviewReview, ReviewReviewUpdateDto dto)
 		{
-			rr.IsHelpful = dto.IsHelpful;
+			reviewReview.IsHelpful = dto.IsHelpful;
 		}
 	}
 }

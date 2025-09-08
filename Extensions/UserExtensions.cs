@@ -2,7 +2,6 @@
 using AmazonApiServer.DTOs.Review;
 using AmazonApiServer.DTOs.ReviewReview;
 using AmazonApiServer.DTOs.User;
-using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using AmazonApiServer.Services;
 
@@ -14,7 +13,7 @@ namespace AmazonApiServer.Extensions
 		{
 			return new UserDto
 			{
-				id = user.Id,
+				Id = user.Id,
 				FirstName = user.FirstName,
 				LastName = user.LastName,
 				Email = user.Email,

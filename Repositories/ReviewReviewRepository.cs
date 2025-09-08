@@ -18,32 +18,46 @@ namespace AmazonApiServer.Repositories
 		public async Task<IEnumerable<ReviewReviewDto>> GetAllAsync()
 		{
 			return await _context.ReviewReviews
-				.Select(rr => new ReviewReviewDto
+				.Select(reviewReview => new ReviewReviewDto
 				{
-					Id = rr.Id,
-					ReviewId = rr.ReviewId,
-					UserId = rr.UserId,
-					IsHelpful = rr.IsHelpful
+					Id = reviewReview.Id,
+					ReviewId = reviewReview.ReviewId,
+					UserId = reviewReview.UserId,
+					IsHelpful = reviewReview.IsHelpful
 				}).ToListAsync();
 		}
 
 		public async Task<ReviewReviewDto?> GetByIdAsync(Guid id)
 		{
-			var rr = await _context.ReviewReviews.FindAsync(id);
-			if (rr == null) return null;
+			var reviewReview = await _context.ReviewReviews.FindAsync(id);
+			if (reviewReview == null) return null;
 
 			return new ReviewReviewDto
 			{
-				Id = rr.Id,
-				ReviewId = rr.ReviewId,
-				UserId = rr.UserId,
-				IsHelpful = rr.IsHelpful
+				Id = reviewReview.Id,
+				ReviewId = reviewReview.ReviewId,
+				UserId = reviewReview.UserId,
+				IsHelpful = reviewReview.IsHelpful
+			};
+		}
+
+		public async Task<ReviewReviewDto?> GetByReviewIdAsync(Guid id)
+		{
+			var reviewReviews = await _context.ReviewReviews.Where(rr => rr.ReviewId == id).ToListAsync();
+			if (reviewReviews == null) return null;
+
+			var helpfulCount = reviewReviews.Count(rr => rr.IsHelpful);
+
+			return new ReviewReviewDto
+			{
+				ReviewId = id,
+				Count = helpfulCount
 			};
 		}
 
 		public async Task<ReviewReviewDto?> CreateAsync(ReviewReviewCreateDto dto)
 		{
-			var rr = new ReviewReview
+			var reviewReview = new ReviewReview
 			{
 				Id = Guid.NewGuid(),
 				ReviewId = dto.ReviewId,
@@ -51,30 +65,54 @@ namespace AmazonApiServer.Repositories
 				IsHelpful = dto.IsHelpful
 			};
 
-			_context.ReviewReviews.Add(rr);
+			_context.ReviewReviews.Add(reviewReview);
 			await _context.SaveChangesAsync();
-			return await GetByIdAsync(rr.Id);
+			return await GetByIdAsync(reviewReview.Id);
 		}
 
 		public async Task<ReviewReviewDto?> UpdateAsync(ReviewReviewUpdateDto dto)
 		{
-			var rr = await _context.ReviewReviews.FindAsync(dto.Id);
-			if (rr == null) return null;
+			var reviewReview = await _context.ReviewReviews.FindAsync(dto.Id);
+			if (reviewReview == null) return null;
 
-			rr.IsHelpful = dto.IsHelpful;
+			reviewReview.IsHelpful = dto.IsHelpful;
 			await _context.SaveChangesAsync();
-			return await GetByIdAsync(rr.Id);
+			return await GetByIdAsync(reviewReview.Id);
 		}
 
 		public async Task<bool> DeleteAsync(Guid id)
 		{
-			var rr = await _context.ReviewReviews.FindAsync(id);
-			if (rr == null) return false;
+			var reviewReview = await _context.ReviewReviews.FindAsync(id);
+			if (reviewReview == null) return false;
 
-			_context.ReviewReviews.Remove(rr);
+			_context.ReviewReviews.Remove(reviewReview);
 			await _context.SaveChangesAsync();
 			return true;
 		}
-	}
 
+		public async Task<ReviewReviewDto?> ToggleHelpfulAsync(ReviewReviewCreateDto dto)
+		{
+			var reviewReview = await _context.ReviewReviews.FirstOrDefaultAsync(r => r.ReviewId == dto.ReviewId && r.UserId == dto.UserId);
+
+			if (reviewReview != null)
+			{
+				reviewReview.IsHelpful = dto.IsHelpful;
+			}
+			else
+			{
+				reviewReview = new ReviewReview
+				{
+					Id = Guid.NewGuid(),
+					ReviewId = dto.ReviewId,
+					UserId = dto.UserId,
+					IsHelpful = dto.IsHelpful
+				};
+
+				_context.ReviewReviews.Add(reviewReview);
+			}
+
+			await _context.SaveChangesAsync();
+			return await GetByReviewIdAsync(reviewReview.ReviewId);
+		}
+	}
 }

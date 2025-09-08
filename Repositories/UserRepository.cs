@@ -142,5 +142,40 @@ namespace AmazonApiServer.Repositories
 
 			return users.Select(u => u.ToDto());
 		}
+
+		public async Task<UserDto?> ToggleFavoriteAsync(Guid userId, Guid productId)
+		{
+			var user = await _context.Users
+				.Include(u => u.Wishlist)
+				.FirstOrDefaultAsync(u => u.Id == userId);
+
+			if (user == null) return null;
+
+			var product = await _context.Products.FindAsync(productId);
+			if (product == null) return null;
+
+			if (user.Wishlist.Any(p => p.Id == productId))
+			{
+				user.Wishlist.Remove(product);
+			}
+			else
+			{
+				user.Wishlist.Add(product);
+			}
+
+			await _context.SaveChangesAsync();
+
+			return new UserDto
+			{
+				Id = user.Id,
+				Email = user.Email,
+				WishList = user.Wishlist.Select(p => new ProductDto
+				{
+					Id = p.Id,
+					Name = p.Name,
+				}).ToList()
+			};
+		}
+
 	}
 }

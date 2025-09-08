@@ -11,6 +11,7 @@ namespace AmazonApiServer.Interfaces
 		Task<UserDto?> MarkDeleteUserAsync(Guid id);
 		Task<UserDto?> ToggleStatusAsync(Guid id);
 		Task<UserDto?> ToggleRoleAsync(Guid id);
+		Task<UserDto?> ToggleFavoriteAsync(Guid userId, Guid productId);
 		Task<IEnumerable<UserDto>> SearchUsersAsync(string query, string? role);
 	}
 }

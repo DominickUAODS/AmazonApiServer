@@ -56,5 +56,4 @@ namespace AmazonApiServer.Controllers
 			return success ? Ok() : NotFound();
 		}
 	}
-
 }

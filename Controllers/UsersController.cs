@@ -43,7 +43,7 @@ namespace AmazonApiServer.Controllers
 			var result = await _users.AddUserAsync(dto);
 			return result is null
 				? StatusCode(500, new { error = "Could not add user" })
-				: CreatedAtAction(nameof(GetUserById), new { id = result.id }, result);
+				: CreatedAtAction(nameof(GetUserById), new { id = result.Id }, result);
 		}
 
 		[HttpPut]
@@ -97,6 +97,16 @@ namespace AmazonApiServer.Controllers
 		{
 			var users = await _users.SearchUsersAsync(query, role);
 			return Ok(users);
+		}
+
+		[HttpPost("{userId}/wishlist/{productId}/toggle")]
+		[Authorize]
+		public async Task<IActionResult> ToggleFavorite(Guid userId, Guid productId)
+		{
+			var user = await _users.ToggleFavoriteAsync(userId, productId);
+			if (user == null) return NotFound();
+
+			return Ok(user);
 		}
 	}
 }

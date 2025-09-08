@@ -9,5 +9,6 @@ namespace AmazonApiServer.Interfaces
 		Task<ReviewReviewDto?> CreateAsync(ReviewReviewCreateDto dto);
 		Task<ReviewReviewDto?> UpdateAsync(ReviewReviewUpdateDto dto);
 		Task<bool> DeleteAsync(Guid id);
+		Task<ReviewReviewDto?> ToggleHelpfulAsync(ReviewReviewCreateDto dto);
 	}
 }

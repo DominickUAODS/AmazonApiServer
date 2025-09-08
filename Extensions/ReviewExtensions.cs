@@ -10,7 +10,9 @@ namespace AmazonApiServer.Extensions
 			return new ReviewDto
 			{
 				Id = review.Id,
-				UserId = review.UserId,
+				UserImage = review.User.ProfilePhoto,
+				UserFirstName = review.User.FirstName,
+				UserLastName = review.User.LastName,
 				ProductId = review.ProductId,
 				Title = review.Title,
 				Content = review.Content,

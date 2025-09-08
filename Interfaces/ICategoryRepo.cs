@@ -9,5 +9,6 @@ namespace AmazonApiServer.Interfaces
         Task<Category?> DeleteAsync(Guid categoryId);
         Task<List<Category>> GetAllAsync();
         Task<Category?> GetByIdAsync(Guid id);
-    }
+        Task<List<Category>?> SearchCategoriesAsync(string? query);
+	}
 }

@@ -21,7 +21,7 @@ namespace AmazonApiServer.Data
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<OrderItem> OrderItems { get; set; }
 		public DbSet<Product> Products { get; set; }
-		public DbSet<ProductDetail> ProductDetailss { get; set; }
+		public DbSet<ProductDetail> ProductDetails { get; set; }
 		public DbSet<ProductDisplay> ProductDisplays { get; set; }
 		public DbSet<ProductFeature> ProductFeatures { get; set; }
 		public DbSet<PropertyKey> PropertyKeys { get; set; }
@@ -35,21 +35,24 @@ namespace AmazonApiServer.Data
 			modelBuilder.Entity<User>().HasOne(e => e.Role).WithMany(e => e.Users);
 			modelBuilder.Entity<User>().HasMany(e => e.Reviews).WithOne(e => e.User).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<User>().HasMany(e => e.ReviewReviews).WithOne(e => e.User).OnDelete(DeleteBehavior.NoAction);
-			modelBuilder.Entity<Review>().HasMany(e => e.ReviewReviews).WithOne(e => e.Review).OnDelete(DeleteBehavior.NoAction);
-			modelBuilder.Entity<Review>().HasMany(e => e.ReviewTags).WithOne(e => e.Review).OnDelete(DeleteBehavior.NoAction);
-			modelBuilder.Entity<Review>().HasMany(e => e.ReviewImages).WithOne(e => e.Review).OnDelete(DeleteBehavior.NoAction);
+
+			modelBuilder.Entity<Review>().HasMany(e => e.ReviewReviews).WithOne(e => e.Review).OnDelete(DeleteBehavior.Cascade);
+			modelBuilder.Entity<Review>().HasMany(e => e.ReviewTags).WithOne(e => e.Review).OnDelete(DeleteBehavior.Cascade);
+			modelBuilder.Entity<Review>().HasMany(e => e.ReviewImages).WithOne(e => e.Review).OnDelete(DeleteBehavior.Cascade);
 			modelBuilder.Entity<Review>().HasOne(e => e.Product).WithMany(e => e.Reviews).OnDelete(DeleteBehavior.NoAction);
+
 			modelBuilder.Entity<Product>().HasMany(e => e.Displays).WithOne(e => e.Product).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<Product>().HasMany(e => e.Details).WithOne(e => e.Product).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<Product>().HasMany(e => e.Features).WithOne(e => e.Product).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<Product>().HasOne(e => e.Category).WithMany(e => e.Products).OnDelete(DeleteBehavior.SetNull);
 			modelBuilder.Entity<Product>().HasMany(e => e.OrderItems).WithOne(e => e.Product).OnDelete(DeleteBehavior.NoAction);
+
 			modelBuilder.Entity<OrderItem>().HasOne(e => e.Order).WithMany(e => e.OrderItems).OnDelete(DeleteBehavior.NoAction);
+
 			modelBuilder.Entity<Category>().HasMany(e => e.PropertyKeys).WithOne(e => e.Category).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<Category>().HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId).OnDelete(DeleteBehavior.Cascade);
-			modelBuilder.Entity<Role>().HasMany(e => e.Users).WithOne(e => e.Role).OnDelete(DeleteBehavior.NoAction);
 
-			//modelBuilder.Entity<User>().Property(e => e.RegistrationDate).HasDefaultValueSql("CURRENT_DATE()");
+			modelBuilder.Entity<Role>().HasMany(e => e.Users).WithOne(e => e.Role).OnDelete(DeleteBehavior.NoAction);
 
 			base.OnModelCreating(modelBuilder);
 		}

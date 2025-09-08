@@ -21,10 +21,10 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("published")]
         public DateTime Published { get; set; }
         [JsonPropertyName("rewiew_reviews")]
-        public List<ReviewReview>? ReviewReviews { get; set; }
-        [JsonPropertyName("rewiew_tags")]
-        public List<ReviewTag>? ReviewTags { get; set; }
-        [JsonPropertyName("rewiew_images")]
-        public List<ReviewImage>? ReviewImages { get; set; }
-    }
+        public ICollection<ReviewReview>? ReviewReviews { get; set; } = new List<ReviewReview>();
+		[JsonPropertyName("rewiew_tags")]
+        public ICollection<ReviewTag>? ReviewTags { get; set; } = new List<ReviewTag>();
+		[JsonPropertyName("rewiew_images")]
+        public ICollection<ReviewImage>? ReviewImages { get; set; } = new List<ReviewImage>();
+	}
 }
