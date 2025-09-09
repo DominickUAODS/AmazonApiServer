@@ -38,8 +38,11 @@ namespace AmazonApiServer.Controllers
 				.Include(u => u.Role)
 				.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
-			if (user == null || !PasswordHasher.VerifyPassword(dto.Password, user.PasswordHash!))
-				return Unauthorized(new { error = "Invalid credentials" });
+			if (user == null)
+				return BadRequest(new { error = "Wrong or invalid email address" });
+
+			if (!PasswordHasher.VerifyPassword(dto.Password, user.PasswordHash!))
+				return BadRequest(new { error = "Incorrect password" });
 
 			var jwt = _tokenService.CreateJwtToken(user);
 			var refreshToken = await _tokenService.CreateRefreshTokenAsync(user);
@@ -66,7 +69,7 @@ namespace AmazonApiServer.Controllers
 		{
 			var exists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
 			if (exists)
-				return this.BadRequest(new { error = "User already registered" });
+				return BadRequest(new { error = "User already registered" });
 
 			var code = CodeGenerator.Generate6DigitCode();
 			var hashedPassword = PasswordHasher.HashPassword(dto.Password);
