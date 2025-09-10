@@ -24,8 +24,8 @@ namespace AmazonApiServer.Controllers
                 Name = p.Name,
                 Price = p.Price,
                 Discount = p.Discount,
-                Display = p.Displays?.Select(d => d.Image).First() ?? string.Empty,
-                Rating = filter.IncludeReviews ? (p.Reviews?.Count > 0 ? p.Reviews.Average(r => r.Stars) : 0) : null,
+                Display = p.Displays?.Select(d => d.Image).FirstOrDefault() ?? string.Empty,
+                Rating = filter.IncludeReviews ? ((p.Reviews != null && p.Reviews.Count > 0) ? p.Reviews.Average(r => r.Stars) : 0) : null,
                 Comments = filter.IncludeReviews ? p.Reviews?.Count : null
             });
             return Ok(productDtosList);
@@ -69,7 +69,7 @@ namespace AmazonApiServer.Controllers
                 Price = productDto.Price,
                 Discount = productDto.Discount,
                 Number = productDto.Number,
-                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? [],
                 Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
                 Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
@@ -102,7 +102,7 @@ namespace AmazonApiServer.Controllers
                 Price = productDto.Price,
                 Discount = productDto.Discount,
                 Number = productDto.Number,
-                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList(),
+                Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? [],
                 Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
                 Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
             };
