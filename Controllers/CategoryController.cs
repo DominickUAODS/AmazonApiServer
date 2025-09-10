@@ -20,7 +20,10 @@ namespace AmazonApiServer.Controllers
                 Id = c.Id,
                 Name = c.Name,
                 Icon = c.Icon,
-                ParentId = c.ParentId
+                Image = c.Image,
+                IsActive = c.IsActive,
+                Description = c.Description,
+                ParentId = c.ParentId,
             }).ToList();
             return Ok(categoryDtosList);
         }
@@ -127,5 +130,27 @@ namespace AmazonApiServer.Controllers
             }
             return Ok(deleted);
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchCategories([FromQuery] string query)
+        {
+			List<Category> categoriesList = await _categories.SearchCategoriesAsync(query);
+
+            if (categoriesList != null)
+            {
+                List<CategoryInListDto> categoryDtosList = categoriesList.Select(c => new CategoryInListDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Icon = c.Icon,
+                    Image = c.Image,
+                    IsActive = c.IsActive,
+                    Description = c.Description,
+                    ParentId = c.ParentId,
+                }).ToList();
+                return Ok(categoryDtosList);
+            }
+            return NotFound();
+		}
     }
 }

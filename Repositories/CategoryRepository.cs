@@ -53,5 +53,17 @@ namespace AmazonApiServer.Repositories
         {
             return await _context.Categories.Include(e => e.PropertyKeys).FirstOrDefaultAsync(c => c.Id == id);
         }
-    }
+
+		
+		public async Task<List<Category>?> SearchCategoriesAsync(string? query)
+		{
+			if (!string.IsNullOrWhiteSpace(query))
+			{
+                var q = query.ToLower();
+				var categories = await _context.Categories.Where(c => c.Name.ToLower().Contains(q)).ToListAsync();
+                return categories;
+			}
+            return null;
+		}
+	}
 }
