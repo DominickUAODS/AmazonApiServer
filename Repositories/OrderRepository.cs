@@ -212,33 +212,36 @@ namespace AmazonApiServer.Repositories
 			return orders.Select(o => new OrderDto
 			{
 				Id = o.Id,
-				UserId = o.UserId,
-				RecipientFirstName = o.RecipientFirstName,
-				RecipientLastName = o.RecipientLastName,
-				RecipientEmail = o.RecipientEmail,
-				DeliveryAddressId = o.DeliveryAddressId,
-				Address = o.DeliveryAddress == null
-					? null
-					: new DeliveryAddressDto
-					{
-						Id = o.DeliveryAddress.Id,
-						CountryId = o.DeliveryAddress.CountryId,
-						CountryName = o.DeliveryAddress.Country.Name,
-						StateId = o.DeliveryAddress.StateId,
-						StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
-						City = o.DeliveryAddress.City,
-						Postcode = o.DeliveryAddress.Postcode
-					},
-				PaymentType = o.PaymentType.ToString(),
+				//UserId = o.UserId,
+				//RecipientFirstName = o.RecipientFirstName,
+				//RecipientLastName = o.RecipientLastName,
+				//RecipientEmail = o.RecipientEmail,
+				//DeliveryAddressId = o.DeliveryAddressId,
+				//Address = o.DeliveryAddress == null
+				//	? null
+				//	: new DeliveryAddressDto
+				//	{
+				//		Id = o.DeliveryAddress.Id,
+				//		CountryId = o.DeliveryAddress.CountryId,
+				//		CountryName = o.DeliveryAddress.Country.Name,
+				//		StateId = o.DeliveryAddress.StateId,
+				//		StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
+				//		City = o.DeliveryAddress.City,
+				//		Postcode = o.DeliveryAddress.Postcode
+				//	},
+				//PaymentType = o.PaymentType.ToString(),
 				OrderStatus = o.Status.ToString(),
 				OrderedOn = o.OrderedOn,
-				Items = o.OrderItems.Select(i => new OrderItemDto
-				{
-					ProductId = i.ProductId,
-					ProductName = i.Product?.Code ?? "",
-					ProductImage = i.Product?.Displays.FirstOrDefault()?.Image ?? string.Empty,
-					Number = i.Number
-				}).ToList()
+				ItemsCount = o.OrderItems.Count,
+				TotalPrice = (decimal)o.OrderItems.Sum(i => (i.Product?.Price ?? 0) * i.Number)
+				//.Select
+				//(i => new OrderItemDto
+				//{
+				//	ProductId = i.ProductId,
+				//	ProductName = i.Product?.Code ?? "",
+				//	ProductImage = i.Product?.Displays.FirstOrDefault()?.Image ?? string.Empty,
+				//	Number = i.Number
+				//}).ToList()
 			});
 		}
 

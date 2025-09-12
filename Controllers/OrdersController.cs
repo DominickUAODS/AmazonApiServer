@@ -1,4 +1,5 @@
-﻿using AmazonApiServer.DTOs.Order;
+﻿using System.IdentityModel.Tokens.Jwt;
+using AmazonApiServer.DTOs.Order;
 using AmazonApiServer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,10 +33,16 @@ namespace AmazonApiServer.Controllers
 			return result == null ? NotFound() : Ok(result);
 		}
 
-		[HttpGet("by-user/{userId}")]
+		[HttpGet("by-user")]
 		[Authorize]
-		public async Task<IActionResult> GetByUserId(Guid userId)
+		public async Task<IActionResult> GetByUserId()
 		{
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim))
+				return Unauthorized("Invalid token");
+
+			var userId = Guid.Parse(userIdClaim);
+
 			var results = await _orders.GetOrdersByUserIdAsync(userId);
 			return results == null ? NotFound() : Ok(results);
 		}

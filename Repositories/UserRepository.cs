@@ -1,10 +1,12 @@
 ﻿using AmazonApiServer.Data;
+using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Extensions;
 using AmazonApiServer.Interfaces;
-using AmazonApiServer.Models;
 using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AmazonApiServer.Repositories
 {
@@ -165,17 +167,37 @@ namespace AmazonApiServer.Repositories
 
 			await _context.SaveChangesAsync();
 
-			return new UserDto
-			{
-				Id = user.Id,
-				Email = user.Email,
-				WishList = user.Wishlist.Select(p => new ProductDto
+			return user.ToDto();
+		}
+
+		public async Task<IEnumerable<UserWishlistDto>> GetWishlistAsync(Guid userId)
+		{
+			var user = await _context.Users
+				.Include(u => u.Wishlist)
+				.ThenInclude(p => p.Displays)
+				.Include(u => u.Wishlist)
+				.ThenInclude(p => p.Reviews)
+				.FirstOrDefaultAsync(u => u.Id == userId);
+
+			//var user = await _context.Users.Include(u => u.Wishlist).FirstOrDefaultAsync(u => u.Id == userId);
+				
+
+			if (user == null) return [];
+
+			return user.Wishlist.Select(p =>
+			{				
+				return new UserWishlistDto
 				{
 					Id = p.Id,
 					Name = p.Name,
-				}).ToList()
-			};
+					Image = p.Displays.FirstOrDefault()?.Image ?? string.Empty,
+					Reviews = p.Reviews.Count,
+					Rating = p.Reviews.Any() ? (int)p.Reviews.Average(r => r.Stars) : 0,
+					Price = (decimal)p.Price,
+					Discount = p.Discount,
+					OldPrice = Math.Round((decimal)(p.Price * (100 + p.Discount) / 100), 2)
+				};
+			});
 		}
-
 	}
 }

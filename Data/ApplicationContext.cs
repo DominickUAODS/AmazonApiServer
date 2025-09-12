@@ -33,7 +33,7 @@ namespace AmazonApiServer.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			modelBuilder.Entity<User>().HasMany(u => u.Wishlist).WithMany(p => p.WishlistedBy); // todo delete wishlist item on user or product delete
+			modelBuilder.Entity<User>().HasMany(p => p.Wishlist).WithMany(u => u.WishlistedBy); // todo delete wishlist item on user or product delete
 			modelBuilder.Entity<User>().HasMany(e => e.Orders).WithOne(e => e.User).OnDelete(DeleteBehavior.NoAction);
 			modelBuilder.Entity<User>().HasOne(e => e.Role).WithMany(e => e.Users);
 			modelBuilder.Entity<User>().HasMany(e => e.Reviews).WithOne(e => e.User).OnDelete(DeleteBehavior.NoAction);

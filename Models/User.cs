@@ -4,6 +4,7 @@ namespace AmazonApiServer.Models
 {
 	public class User
 	{
+		public static object Claims { get; internal set; }
 		[JsonPropertyName("id")]
 		public Guid Id { get; set; }
 		[JsonPropertyName("first_name")]
@@ -29,7 +30,7 @@ namespace AmazonApiServer.Models
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public List<Order>? Orders { get; set; }
 		[JsonPropertyName("wishlist")]
-		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		//[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public List<Product>? Wishlist { get; set; }
 		[JsonPropertyName("reviews")]
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

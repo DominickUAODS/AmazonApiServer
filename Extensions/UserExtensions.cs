@@ -1,4 +1,5 @@
 ﻿using AmazonApiServer.DTOs.Order;
+using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.Review;
 using AmazonApiServer.DTOs.ReviewReview;
 using AmazonApiServer.DTOs.User;

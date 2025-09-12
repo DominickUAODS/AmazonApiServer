@@ -1,6 +1,6 @@
-﻿using AmazonApiServer.DTOs.User;
+﻿using System.IdentityModel.Tokens.Jwt;
+using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Interfaces;
-using AmazonApiServer.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,7 +30,9 @@ namespace AmazonApiServer.Controllers
 		public async Task<IActionResult> GetUserById(Guid id)
 		{
 			var user = await _users.GetUserByIdAsync(id);
-			return user == null ? NotFound() : Ok(user);
+			return user == null
+				? StatusCode(404, new { error = "User not found" })
+				: Ok(user);
 		}
 
 		[HttpPost]
@@ -99,14 +101,38 @@ namespace AmazonApiServer.Controllers
 			return Ok(users);
 		}
 
-		[HttpPost("{userId}/wishlist/{productId}/toggle")]
+		[HttpPost("wishlist/{productId}/toggle")]
 		[Authorize]
-		public async Task<IActionResult> ToggleFavorite(Guid userId, Guid productId)
+		public async Task<IActionResult> ToggleFavorite(Guid productId)
 		{
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim))
+				return Unauthorized("Invalid token");
+
+			var userId = Guid.Parse(userIdClaim);
+
 			var user = await _users.ToggleFavoriteAsync(userId, productId);
 			if (user == null) return NotFound();
 
 			return Ok(user);
+		}
+
+		[HttpGet("wishlist")]
+		[Authorize]
+		public async Task<IActionResult> GetWishlist()
+		{
+			var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+			if (string.IsNullOrEmpty(userIdClaim))
+				return Unauthorized("Invalid token");
+
+			var userId = Guid.Parse(userIdClaim);
+
+			var products = await _users.GetWishlistAsync(userId);
+
+			if (!products.Any())
+				return NotFound(new { message = "Wishlist is empty or user not found." });
+
+			return Ok(products);
 		}
 	}
 }

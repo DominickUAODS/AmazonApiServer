@@ -17,5 +17,7 @@ namespace AmazonApiServer.DTOs.Order
 		public string OrderStatus { get; set; } = string.Empty;
 		public DateTime OrderedOn { get; set; }
 		public List<OrderItemDto> Items { get; set; } = [];
+		public int ItemsCount { get; set; }
+		public decimal TotalPrice { get; set; }
 	}
 }

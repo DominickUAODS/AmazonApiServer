@@ -20,7 +20,7 @@ namespace AmazonApiServer.Models
         public int? Discount { get; set; }
         [JsonPropertyName("number")]
         public int Number { get; set; }
-        [JsonIgnore]
+        
         public List<User>? WishlistedBy { get; set; }
         [JsonIgnore]
         public List<Review>? Reviews { get; set; }
@@ -32,5 +32,5 @@ namespace AmazonApiServer.Models
         public List<ProductFeature>? Features { get; set; }
         [JsonIgnore]
         public List<OrderItem>? OrderItems { get; set; }
-    }
+	}
 }

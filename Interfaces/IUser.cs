@@ -13,5 +13,6 @@ namespace AmazonApiServer.Interfaces
 		Task<UserDto?> ToggleRoleAsync(Guid id);
 		Task<UserDto?> ToggleFavoriteAsync(Guid userId, Guid productId);
 		Task<IEnumerable<UserDto>> SearchUsersAsync(string query, string? role);
+		Task<IEnumerable<UserWishlistDto>> GetWishlistAsync(Guid userId);
 	}
 }

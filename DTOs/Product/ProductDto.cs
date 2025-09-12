@@ -7,10 +7,12 @@ namespace AmazonApiServer.DTOs.Product
 {
     public class ProductDto
     {
-        [JsonPropertyName("name")]
-        public required string Name { get; set; }
+		[JsonPropertyName("id")]
+		public Guid Id { get; set; }
+		[JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
         [JsonPropertyName("code")]
-        public required string Code { get; set; }
+        public string Code { get; set; } = string.Empty;
         [JsonPropertyName("category_id")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? CategoryId { get; set; }

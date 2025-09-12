@@ -30,6 +30,8 @@ builder.Services.AddScoped<IToken, TokenRepository>();
 builder.Services.AddScoped<IEmail, EmailRepository>();
 builder.Services.AddScoped<ICategoryRepo, CategoryRepository>();
 builder.Services.AddScoped<IProductRepo, ProductRepository>();
+builder.Services.AddScoped<IOrder, OrderRepository>();
+
 
 var tokenValidationParameters = JwtConfigHelper.GetTokenValidationParameters(builder.Configuration);
 

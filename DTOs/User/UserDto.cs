@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using AmazonApiServer.DTOs.Order;
+using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.Review;
 using AmazonApiServer.DTOs.ReviewReview;
 
@@ -54,8 +55,6 @@ namespace AmazonApiServer.DTOs.User
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public List<ReviewReviewDto>? ReviewReviews { get; set; }
 	}
-
-	public class ProductDto { public Guid Id { get; set; } public string Name { get; set; } = string.Empty; }
 }
 
 
