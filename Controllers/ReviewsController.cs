@@ -1,4 +1,6 @@
-﻿using AmazonApiServer.DTOs.Review;
+﻿using System.IdentityModel.Tokens.Jwt;
+using AmazonApiServer.DTOs.Review;
+using AmazonApiServer.DTOs.ReviewReview;
 using AmazonApiServer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,9 +42,15 @@ namespace AmazonApiServer.Controllers
 			}
 
 			[HttpGet("by-product/{productId}")]
-			public async Task<IActionResult> GetByProductId(Guid productId)
+			public async Task<IActionResult> GetByProductId(Guid productId, [FromQuery] int? stars, [FromQuery] string[]? tags, [FromQuery] string filterMode = "OR", [FromQuery] string sort = "recent", [FromQuery] int skip = 0, [FromQuery] int take = 6)
 			{
-				var reviews = await _review.GetByProductIdAsync(productId);
+				Guid? currentUserId = null;
+
+				var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
+				if (!string.IsNullOrEmpty(userIdClaim))
+					currentUserId = Guid.Parse(userIdClaim);
+
+				var reviews = await _review.GetByProductIdAsync(productId, currentUserId, stars, tags, filterMode, sort, skip, take);
 				return reviews == null ? NotFound() : Ok(reviews);
 			}
 
@@ -79,6 +87,13 @@ namespace AmazonApiServer.Controllers
 				if (!deleted) return NotFound();
 
 				return NoContent();
+			}
+
+			[HttpGet("{productId}/reviews-info")]
+			public async Task<ActionResult<ReviewInfoDto>> GetReviewInfo(Guid productId)
+			{
+				var dto = await _review.GetReviewInfoAsync(productId);
+				return Ok(dto);
 			}
 		}
 	}

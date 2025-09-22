@@ -31,6 +31,9 @@ namespace AmazonApiServer.DTOs.Review
 
 		[JsonPropertyName("published")]
 		public DateTime Published { get; set; }
+		
+		[JsonPropertyName("is_helpful")]
+		public bool IsHelpful { get; set; }
 
 		[JsonPropertyName("helpful_count")]
 		public int HelpfulCount { get; set; }

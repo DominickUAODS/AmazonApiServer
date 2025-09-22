@@ -1,7 +1,8 @@
-﻿using AmazonApiServer.DTOs.ProductDetail;
+﻿using System.Text.Json.Serialization;
+using AmazonApiServer.DTOs.Category;
+using AmazonApiServer.DTOs.ProductDetail;
 using AmazonApiServer.DTOs.ProductFeature;
 using AmazonApiServer.DTOs.Review;
-using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.Product
 {
@@ -35,5 +36,18 @@ namespace AmazonApiServer.DTOs.Product
         [JsonPropertyName("features")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public List<ProductFeatureDto>? Features { get; set; }
-    }
+
+		[JsonPropertyName("stars")]
+		public int? Stars { get; set; }
+
+        [JsonPropertyName("comments")]
+        public int? Comments { get; set; }
+
+		[JsonPropertyName("image")]
+		public string? Image { get; set; }
+
+		[JsonPropertyName("category")]
+		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public CategoryDto? Category { get; set; }
+	}
 }

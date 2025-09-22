@@ -49,7 +49,7 @@ namespace AmazonApiServer.Repositories
 
         public async Task<List<Product>> GetAllAsync(ProductsFilter filter)
         {
-            IQueryable<Product> query = _context.Products;
+            IQueryable<Product> query = _context.Products.AsNoTracking();
             if (filter.CategoryId is not null)
             {
                 List<Guid> categoryIds = await GetSubCategoryIdsAsync(filter.CategoryId.Value);
@@ -57,7 +57,7 @@ namespace AmazonApiServer.Repositories
             }
             if (filter.OnlyDiscounted)
             {
-                query = query.Where(p => p.Discount != null);
+                query = query.Where(p => p.Discount != 0);
             }
             if (filter.MinPrice is not null)
             {
@@ -77,8 +77,11 @@ namespace AmazonApiServer.Repositories
                 query = query.Include(e => e.Reviews);
             }
             query = query.Include(e => e.Displays);
-            return await query.ToListAsync();
-        }
+			//return await query.ToListAsync();
+
+			int skip = (filter.Page - 1) * filter.PageSize;
+			return await query.Skip(skip).Take(filter.PageSize).ToListAsync();
+		}
 
         public async Task<Product?> GetByIdAsync(Guid id)
         {
@@ -87,7 +90,7 @@ namespace AmazonApiServer.Repositories
 
         private async Task<List<Guid>> GetSubCategoryIdsAsync(Guid parentId)
         {
-            List<Category> allCategories = await _context.Categories.ToListAsync();
+            List<Category> allCategories = await _context.Categories.AsNoTracking().ToListAsync();
             List<Guid> guids = [];
             GetChildren(parentId, allCategories, guids);
             return guids;

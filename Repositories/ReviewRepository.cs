@@ -1,5 +1,7 @@
-﻿using AmazonApiServer.Data;
+﻿using System.Linq;
+using AmazonApiServer.Data;
 using AmazonApiServer.DTOs.Review;
+using AmazonApiServer.DTOs.ReviewReview;
 using AmazonApiServer.Enums;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
@@ -82,21 +84,59 @@ namespace AmazonApiServer.Repositories
 			};
 		}
 
-		public async Task<IEnumerable<ReviewDto?>?> GetByProductIdAsync(Guid id)
+		public async Task<IEnumerable<ReviewDto?>?> GetByProductIdAsync(Guid productId, Guid? currentUserId = null, int? stars = null, string[]? tags = null, string filterMode = "OR", string sort = "recent", int skip = 0, int take = 6)
 		{
-			var reviews = await _context.Reviews
+			var query = _context.Reviews
 				.AsNoTracking()
 				.Include(r => r.User)
 				.Include(r => r.ReviewTags)
 				.Include(r => r.ReviewReviews)
 				.Include(r => r.ReviewImages)
-				.Where(r => r.ProductId == id)
-				.OrderBy(r => r.Published)
+				.Where(r => r.ProductId == productId);
+
+			// Фильтр по звёздам
+			if (stars.HasValue)
+			{
+				query = query.Where(r => r.Stars == stars.Value);
+			}
+
+			// Фильтр по тегам
+			if (tags != null && tags.Length > 0)
+			{
+				var parsedTags = tags
+					.Select(t => Enum.TryParse<ProductReviewTag>(t, out var p) ? p : (ProductReviewTag?)null)
+					.Where(t => t.HasValue)
+					.Select(t => t.Value)
+					.ToList();
+
+				if (filterMode.ToUpper() == "AND")
+				{
+					foreach (var tag in parsedTags)
+					{
+						query = query.Where(r => r.ReviewTags!.Any(rt => rt.Tag == tag));
+					}
+				}
+				else // OR
+				{
+					query = query.Where(r => r.ReviewTags!.Any(rt => parsedTags.Contains(rt.Tag)));
+				}
+			}
+
+			// Сортировка
+			query = sort.ToLower() switch
+			{
+				"top" => query.OrderByDescending(r => r.ReviewTags!.Count), // топ по количеству полезных тегов
+				"older" => query.OrderBy(r => r.Published),
+				_ => query.OrderByDescending(r => r.Published), // recent по умолчанию
+			};
+
+			// Пагинация
+			var reviews = await query
+				.Skip(skip)
+				.Take(take)
 				.ToListAsync();
 
-			if (reviews.Count == 0)
-				return Enumerable.Empty<ReviewDto>();
-
+			// Маппинг в DTO
 			var dtos = reviews.Select(r => new ReviewDto
 			{
 				Id = r.Id,
@@ -108,16 +148,10 @@ namespace AmazonApiServer.Repositories
 				Title = r.Title,
 				Content = r.Content,
 				Published = r.Published,
-
-				HelpfulCount = r.ReviewTags?.Count ?? 0,
-
-				ReviewTags = r.ReviewTags != null
-					? r.ReviewTags.Select(rt => rt.Tag).ToList()
-					: new List<ProductReviewTag>(),
-
-				ReviewImages = r.ReviewImages != null
-					? r.ReviewImages.Select(ri => ri.Image).ToList()
-					: new List<string>()
+				HelpfulCount = r.ReviewReviews?.Count(rr => rr.IsHelpful) ?? 0,
+				IsHelpful = currentUserId.HasValue && r.ReviewReviews!.Any(rr => rr.UserId == currentUserId && rr.IsHelpful),
+				ReviewTags = r.ReviewTags != null ? r.ReviewTags.Select(rt => rt.Tag).ToList() : new List<ProductReviewTag>(),
+				ReviewImages = r.ReviewImages != null ? r.ReviewImages.Select(ri => ri.Image).ToList() : new List<string>()
 			}).ToList();
 
 			return dtos;
@@ -258,8 +292,6 @@ namespace AmazonApiServer.Repositories
 			return await GetByIdAsync(review.Id);
 		}
 
-
-
 		public async Task<bool> DeleteAsync(Guid id)
 		{
 			var review = await _context.Reviews.FindAsync(id);
@@ -269,6 +301,45 @@ namespace AmazonApiServer.Repositories
 			await _context.SaveChangesAsync();
 			return true;
 		}
-	}
 
+		public async Task<ReviewInfoDto> GetReviewInfoAsync(Guid productId)
+		{
+			var reviews = await _context.Reviews.Where(r => r.ProductId == productId).ToListAsync();
+
+			if (!reviews.Any())
+				return new ReviewInfoDto
+				{
+					Average = 0,
+					TotalReviews = 0,
+					Ratings = new int[5]
+				};
+
+			var totalReviews = reviews.Count;
+			var average = (int)Math.Floor(reviews.Average(r => r.Stars));
+
+			var ratings = new int[5]; // индекс 0 = 5 звезд, 4 = 1 звезда
+
+			foreach (var review in reviews)
+			{
+				var index = 5 - review.Stars;
+				if (index >= 0 && index < 5)
+				{
+					ratings[index]++;
+				}
+			}
+
+			// сразу переводим в проценты
+			for (int i = 0; i < 5; i++)
+			{
+				ratings[i] = totalReviews > 0 ? (int)Math.Round((double)ratings[i] / totalReviews * 100) : 0;
+			}
+
+			return new ReviewInfoDto
+			{
+				Average = average,
+				TotalReviews = totalReviews,
+				Ratings = ratings
+			};
+		}
+	}
 }

@@ -134,7 +134,7 @@ namespace AmazonApiServer.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> SearchCategories([FromQuery] string query)
         {
-			List<Category> categoriesList = await _categories.SearchCategoriesAsync(query);
+			List<Category>? categoriesList = await _categories.SearchCategoriesAsync(query);
 
             if (categoriesList != null)
             {
@@ -152,5 +152,12 @@ namespace AmazonApiServer.Controllers
             }
             return NotFound();
 		}
-    }
+
+		[HttpGet("{categoryId}/breadcrumbs")]
+		public async Task<IActionResult> GetBreadcrumbs(Guid categoryId)
+		{
+			var crumbs = await _categories.GetBreadcrumbsAsync(categoryId);
+			return Ok(crumbs);
+		}
+	}
 }

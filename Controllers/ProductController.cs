@@ -1,4 +1,5 @@
-﻿using AmazonApiServer.DTOs.Product;
+﻿using AmazonApiServer.DTOs.Category;
+using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.ProductDetail;
 using AmazonApiServer.DTOs.ProductFeature;
 using AmazonApiServer.Filters;
@@ -44,12 +45,15 @@ namespace AmazonApiServer.Controllers
                 Name = product.Name,
                 Code = product.Code,
                 CategoryId = product.CategoryId,
+                Category = product.Category == null ? null : new CategoryDto { Id = product.Category.Id, Name = product.Category.Name, ParentId = product.Category.ParentId },
                 Price = product.Price,
                 Discount = product.Discount,
                 Number = product.Number,
                 Displays = product.Displays?.Select(d => d.Image).ToList() ?? [],
-                Details = product.Details?.Select(d => new ProductDetailDto { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList() ?? [],
-                Features = product.Features?.Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? []
+                Details = product.Details?.OrderByDescending(d => d.Id).Select(d => new ProductDetailDto { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList() ?? [],
+                Features = product.Features?.OrderByDescending(f => f.Id).Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? [],
+                Stars = (int)Math.Floor(product.Reviews?.Select(r => r.Stars).DefaultIfEmpty(0).Average() ?? 0),
+                Comments = product.Reviews?.Count ?? 0
             };
             return Ok(productDto);
         }

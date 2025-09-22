@@ -1,4 +1,6 @@
-﻿using AmazonApiServer.Models;
+﻿using AmazonApiServer.DTOs.Category;
+using AmazonApiServer.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AmazonApiServer.Interfaces
 {
@@ -10,5 +12,6 @@ namespace AmazonApiServer.Interfaces
         Task<List<Category>> GetAllAsync();
         Task<Category?> GetByIdAsync(Guid id);
         Task<List<Category>?> SearchCategoriesAsync(string? query);
+        Task<List<BreadcrumbDto>> GetBreadcrumbsAsync(Guid categoryId);
 	}
 }
