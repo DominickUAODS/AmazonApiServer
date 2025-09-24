@@ -1,6 +1,5 @@
 ﻿using AmazonApiServer.DTOs.Category;
 using AmazonApiServer.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace AmazonApiServer.Interfaces
 {
