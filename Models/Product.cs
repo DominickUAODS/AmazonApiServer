@@ -23,14 +23,14 @@ namespace AmazonApiServer.Models
         
         public List<User>? WishlistedBy { get; set; }
         [JsonIgnore]
-        public List<Review>? Reviews { get; set; }
-        [JsonIgnore]
-        public List<ProductDisplay> Displays { get; set; } = [];
-        [JsonIgnore]
-        public List<ProductDetail>? Details { get; set; }
-        [JsonIgnore]
-        public List<ProductFeature>? Features { get; set; }
-        [JsonIgnore]
+        public List<Review>? Reviews { get; set; } = new List<Review>();
+		[JsonIgnore]
+        public List<ProductDisplay> Displays { get; set; } = new List<ProductDisplay>();
+		[JsonIgnore]
+        public List<ProductDetail> Details { get; set; } = new List<ProductDetail>();
+		[JsonIgnore]
+        public List<ProductFeature> Features { get; set; } = new List<ProductFeature>();
+		[JsonIgnore]
         public List<OrderItem>? OrderItems { get; set; }
 	}
 }

@@ -50,8 +50,8 @@ namespace AmazonApiServer.Controllers
 				Discount = product.Discount,
 				Number = product.Number,
 				Displays = product.Displays?.Select(d => d.Image).ToList() ?? [],
-				Details = product.Details?.OrderByDescending(d => d.Id).Select(d => new ProductDetailDto { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList() ?? [],
-				Features = product.Features?.OrderByDescending(f => f.Id).Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? [],
+				Details = product.Details?.OrderByDescending(d => d.Id).Select(d => new ProductDetailDto { PropertyKeyId = d.PropertyKeyId, PropertyKey = d.PropertyKey.Name, Attribute = d.Attribute }).ToList() ?? new(),
+				Features = product.Features?.OrderByDescending(f => f.Id).Select(f => new ProductFeatureDto { Name = f.Name, Description = f.Description }).ToList() ?? new(),
 				Stars = (int)Math.Floor(product.Reviews?.Select(r => r.Stars).DefaultIfEmpty(0).Average() ?? 0),
 				Comments = product.Reviews?.Count ?? 0
 			};
@@ -73,9 +73,9 @@ namespace AmazonApiServer.Controllers
 				Price = productDto.Price,
 				Discount = productDto.Discount,
 				Number = productDto.Number,
-				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? [],
-				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
-				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
+				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? new(),
+				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
+				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList() ?? new(),
 			};
 			Product created;
 			try
@@ -106,9 +106,9 @@ namespace AmazonApiServer.Controllers
 				Price = productDto.Price,
 				Discount = productDto.Discount,
 				Number = productDto.Number,
-				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? [],
-				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKey = d.PropertyKey, Attribute = d.Attribute }).ToList(),
-				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList()
+				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? new(),
+				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
+				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList() ?? new()
 			};
 			Product? result;
 			try

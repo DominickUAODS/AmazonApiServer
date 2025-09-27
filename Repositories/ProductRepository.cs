@@ -85,7 +85,13 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<Product?> GetByIdAsync(Guid id)
 		{
-			return await _context.Products.Include(e => e.Displays).Include(e => e.Features).Include(e => e.Details).Include(e => e.Reviews).FirstOrDefaultAsync(c => c.Id == id);
+			return await _context.Products
+				.Include(e => e.Displays)
+				.Include(e => e.Details)
+					.ThenInclude(e => e.PropertyKey)
+				.Include(e => e.Features)
+				.Include(e => e.Reviews)
+				.FirstOrDefaultAsync(c => c.Id == id);
 		}
 
 		private async Task<List<Guid>> GetSubCategoryIdsAsync(Guid parentId)

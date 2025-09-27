@@ -57,6 +57,8 @@ namespace AmazonApiServer.Data
 
 			modelBuilder.Entity<Role>().HasMany(e => e.Users).WithOne(e => e.Role).OnDelete(DeleteBehavior.NoAction);
 
+			modelBuilder.Entity<ProductDetail>().HasOne(d => d.PropertyKey).WithMany(pk => pk.ProductDetails).HasForeignKey(d => d.PropertyKeyId).OnDelete(DeleteBehavior.Cascade);
+
 			base.OnModelCreating(modelBuilder);
 		}
 	}
