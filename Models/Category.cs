@@ -27,6 +27,6 @@ namespace AmazonApiServer.Models
 		[JsonIgnore]
 		public List<Product>? Products { get; set; }
 		[JsonIgnore]
-		public List<PropertyKey>? PropertyKeys { get; set; }
+		public ICollection<PropertyKey>? PropertyKeys { get; set; } = new List<PropertyKey>();
 	}
 }

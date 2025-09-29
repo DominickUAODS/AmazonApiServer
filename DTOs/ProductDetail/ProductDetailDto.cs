@@ -8,9 +8,9 @@ namespace AmazonApiServer.DTOs.ProductDetail
 		public Guid PropertyKeyId { get; set; }
 
 		[JsonPropertyName("property_key")]
-		public required string PropertyKey { get; set; }
+		public string PropertyKey { get; set; } = string.Empty;
 
 		[JsonPropertyName("attribute")]
-		public required string Attribute { get; set; }
+		public string Attribute { get; set; } = string.Empty;
 	}
 }

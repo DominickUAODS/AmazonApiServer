@@ -28,5 +28,8 @@ namespace AmazonApiServer.Filters
 
 		[JsonPropertyName("page_size")]
 		public int PageSize { get; set; } = 12;
+
+		[JsonPropertyName("trending_days")]
+		public int? TrendingDays { get; set; } = 7;
 	}
 }

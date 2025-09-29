@@ -22,6 +22,6 @@ namespace AmazonApiServer.DTOs.Category
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public Guid? ParentId { get; set; }
 		[JsonPropertyName("property_keys")]
-		public List<string>? PropertyKeys { get; set; }
+		public List<PropertyKeyDto> PropertyKeys { get; set; } = new();
 	}
 }

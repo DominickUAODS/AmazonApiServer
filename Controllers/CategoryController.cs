@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AmazonApiServer.DTOs.Category;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
-using AmazonApiServer.DTOs.Category;
+using Microsoft.AspNetCore.Mvc;
 
 namespace AmazonApiServer.Controllers
 {
@@ -12,9 +13,10 @@ namespace AmazonApiServer.Controllers
 		private readonly ICategoryRepo _categories = categories;
 
 		[HttpGet]
-		public async Task<IActionResult> GetAllAsync()
+		public async Task<IActionResult> GetAllAsync([FromQuery] CategoriesFilter filter)
 		{
-			List<Category> categoriesList = await _categories.GetAllAsync();
+			List<Category> categoriesList = await _categories.GetAllAsync(filter);
+
 			List<CategoryInListDto> categoryDtosList = categoriesList.Select(c => new CategoryInListDto
 			{
 				Id = c.Id,
@@ -25,6 +27,7 @@ namespace AmazonApiServer.Controllers
 				Description = c.Description,
 				ParentId = c.ParentId,
 			}).ToList();
+
 			return Ok(categoryDtosList);
 		}
 
@@ -44,7 +47,7 @@ namespace AmazonApiServer.Controllers
 				IsActive = category.IsActive,
 				Description = category.Description,
 				ParentId = category.ParentId,
-				PropertyKeys = category.PropertyKeys?.Select(p => p.Name).ToList() ?? []
+				PropertyKeys = category.PropertyKeys?.Select(pk => new PropertyKeyDto { Id = pk.Id, Name = pk.Name }).ToList() ?? new()
 			};
 			return Ok(categoryDto);
 		}

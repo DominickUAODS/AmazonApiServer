@@ -1,5 +1,6 @@
 ﻿using AmazonApiServer.Data;
 using AmazonApiServer.DTOs.Category;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Models;
 using Microsoft.EntityFrameworkCore;
@@ -45,9 +46,41 @@ namespace AmazonApiServer.Repositories
 			return existingCategory; // todo maybe include foreign keys for debug purposes
 		}
 
-		public async Task<List<Category>> GetAllAsync()
+		public async Task<List<Category>> GetAllAsync(CategoriesFilter filter)
 		{
-			return await _context.Categories.ToListAsync();
+			IQueryable<Category> query = _context.Categories;
+
+			// Фильтр по родителю
+			if (filter.ParentId.HasValue)
+				query = query.Where(c => c.ParentId == filter.ParentId.Value);
+
+			// Фильтр по активности
+			if (filter.IsActive.HasValue)
+				query = query.Where(c => c.IsActive == filter.IsActive.Value);
+
+			// Фильтр на родителя
+			if (filter.IsParent.HasValue)
+				query = query.Where(c => c.ParentId == null);
+
+			// Поиск по имени (частичное совпадение)
+			if (!string.IsNullOrWhiteSpace(filter.Name))
+				query = query.Where(c => c.Name.Contains(filter.Name));
+
+			// Категории с товарами / пустые
+			if (filter.HasProducts.HasValue)
+			{
+				if (filter.HasProducts.Value)
+					query = query.Where(c => c.Products != null && c.Products.Any());
+				else
+					query = query.Where(c => c.Products == null || !c.Products.Any());
+			}
+
+			// Пагинация
+			query = query
+				.Skip((filter.Page - 1) * filter.PageSize)
+				.Take(filter.PageSize);
+
+			return await query.ToListAsync();
 		}
 
 		public async Task<Category?> GetByIdAsync(Guid id)
