@@ -50,6 +50,7 @@ namespace AmazonApiServer.Repositories
 		public async Task<List<Product>> GetAllAsync(ProductsFilter filter)
 		{
 			IQueryable<Product> query = _context.Products.AsNoTracking();
+
 			if (filter.CategoryId is not null)
 			{
 				List<Guid> categoryIds = await GetSubCategoryIdsAsync(filter.CategoryId.Value);
@@ -76,6 +77,15 @@ namespace AmazonApiServer.Repositories
 			{
 				query = query.Include(e => e.Reviews);
 			}
+			if (filter.TrendingDays.HasValue)
+			{
+				DateTime fromDate = DateTime.UtcNow.AddDays(-filter.TrendingDays.Value);
+
+				query = query
+					.Where(p => p.OrderItems.Any(oi => oi.Order.OrderedOn >= fromDate))
+					.OrderByDescending(p => p.OrderItems.Count(oi => oi.Order.OrderedOn >= fromDate));
+			}
+
 			query = query.Include(e => e.Displays);
 			//return await query.ToListAsync();
 
