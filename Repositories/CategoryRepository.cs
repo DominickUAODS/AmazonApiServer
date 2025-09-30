@@ -76,9 +76,9 @@ namespace AmazonApiServer.Repositories
 			}
 
 			// Пагинация
-			query = query
-				.Skip((filter.Page - 1) * filter.PageSize)
-				.Take(filter.PageSize);
+			//query = query
+			//	.Skip((filter.Page - 1) * filter.PageSize)
+			//	.Take(filter.PageSize);
 
 			return await query.ToListAsync();
 		}

@@ -28,6 +28,6 @@ namespace AmazonApiServer.Filters
 		public int Page { get; set; } = 1;    // пагинация
 
 		[JsonPropertyName("page_size")]
-		public int PageSize { get; set; } = 6;
+		public int PageSize { get; set; } = 100;
 	}
 }
