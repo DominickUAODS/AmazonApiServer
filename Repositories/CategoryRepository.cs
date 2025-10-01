@@ -39,7 +39,7 @@ namespace AmazonApiServer.Repositories
 				existingCategory.Description = category.Description;
 				existingCategory.Icon = category.Icon;
 				existingCategory.IsActive = category.IsActive;
-				existingCategory.Parent = category.Parent;
+				existingCategory.ParentId = category.ParentId;
 				existingCategory.PropertyKeys = category.PropertyKeys;
 				await _context.SaveChangesAsync();
 			}

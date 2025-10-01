@@ -53,7 +53,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> CreateAsync([FromForm] AddCategoryDto categoryDto)
+		public async Task<IActionResult> CreateAsync([FromBody] AddCategoryDto categoryDto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -67,7 +67,7 @@ namespace AmazonApiServer.Controllers
 				IsActive = categoryDto.IsActive,
 				Description = categoryDto.Description,
 				ParentId = categoryDto.ParentId,
-				PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
+				PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p.Name }).ToList()
 			};
 			Category created;
 			try
@@ -82,7 +82,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPut("{id}")]
-		public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditCategoryDto categoryDto)
+		public async Task<IActionResult> EditAsync(Guid id, [FromBody] EditCategoryDto categoryDto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -97,7 +97,7 @@ namespace AmazonApiServer.Controllers
 				IsActive = categoryDto.IsActive,
 				Description = categoryDto.Description,
 				ParentId = categoryDto.ParentId,
-				PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p }).ToList()
+				PropertyKeys = categoryDto.PropertyKeys?.Select(p => new PropertyKey { Name = p.Name }).ToList()
 			};
 			Category? result;
 			try
