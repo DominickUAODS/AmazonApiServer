@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AmazonApiServer.Data;
 using AmazonApiServer.DTOs.Auth;
 using AmazonApiServer.Helpers;
@@ -20,6 +21,7 @@ namespace AmazonApiServer.Controllers
 		private readonly IToken _tokenService;
 		private readonly IEmail _emailService;
 		private readonly TokenValidationParameters _validationParameters;
+		private readonly TimeSpan RefreshTokenRenewalThreshold = TimeSpan.FromDays(5);
 
 		public AuthController(ApplicationContext context, IToken token, IEmail emailService, TokenValidationParameters validationParameters)
 		{
@@ -36,6 +38,7 @@ namespace AmazonApiServer.Controllers
 
 			var user = await _context.Users
 				.Include(u => u.Role)
+				.Where(u=> u.IsActive == true)
 				.FirstOrDefaultAsync(u => u.Email == dto.Email);
 
 			if (user == null)
@@ -147,31 +150,105 @@ namespace AmazonApiServer.Controllers
 		[HttpPost("refresh")]
 		public async Task<IActionResult> RefreshToken([FromBody] RefreshDto dto)
 		{
+			//var oldToken = await _context.RefreshTokens
+			//	.Include(t => t.User)
+			//	.ThenInclude(u => u.Role)
+			//	.FirstOrDefaultAsync(t => t.Token == dto.RefreshToken && !t.IsRevoked);
+
+			//if (oldToken == null || oldToken.ExpiresAt < DateTime.UtcNow)
+			//	return Unauthorized(new { error = "Invalid or expired refresh token" });
+
+			//var handler = new JwtSecurityTokenHandler();
+			//var principal = handler.ValidateToken(oldToken?.Token, _validationParameters, out var validatedToken);
+
+			//if (!principal.HasClaim(c => c.Type == "tokenType" && c.Value == "refreshToken"))
+			//	return Unauthorized(new { error = "Invalid or expired refresh token" });
+
+			////oldToken.IsRevoked = true;
+			////var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
+			////var jwt = _tokenService.CreateJwtToken(oldToken.User);
+
+			//// Создаём новый access token
+			//var jwt = _tokenService.CreateJwtToken(oldToken.User);
+
+			//string? newRefreshToken = null;
+
+			//// Если до истечения refresh token осталось мало времени — обновляем его
+			//if (oldToken.ExpiresAt - DateTime.UtcNow < RefreshTokenRenewalThreshold)
+			//{
+			//	oldToken.IsRevoked = true; // отзываем старый
+			//	newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
+			//}
+
+			//await _context.SaveChangesAsync();
+
+			//return Ok(new AuthResponseDto
+			//{
+			//	AccessToken = jwt,
+			//	RefreshToken = newRefreshToken,
+			//	User = new
+			//	{
+			//		id = oldToken.User.Id,
+			//		first_name = oldToken.User.FirstName,
+			//		last_name = oldToken.User.LastName,
+			//		email = oldToken.User.Email,
+			//		role = oldToken.User.Role?.Name
+			//	}
+			//});
+
 			var oldToken = await _context.RefreshTokens
 				.Include(t => t.User)
 				.ThenInclude(u => u.Role)
 				.FirstOrDefaultAsync(t => t.Token == dto.RefreshToken && !t.IsRevoked);
 
-			var handler = new JwtSecurityTokenHandler();
-			var principal = handler.ValidateToken(oldToken?.Token, _validationParameters, out var validatedToken);
+			// 1) Проверки наличия и срока действия
+			if (oldToken == null)
+				return Unauthorized(new { error = "Invalid or expired refresh token" });
+
+			if (oldToken.ExpiresAt < DateTime.UtcNow)
+				return Unauthorized(new { error = "Invalid or expired refresh token" });
+
+			if (string.IsNullOrWhiteSpace(oldToken.Token))
+				return Unauthorized(new { error = "Invalid refresh token" });
+
+			// 2) Валидация JWT (оборачиваем в try/catch)
+			ClaimsPrincipal principal;
+			try
+			{
+				var handler = new JwtSecurityTokenHandler();
+				principal = handler.ValidateToken(oldToken.Token, _validationParameters, out var validatedToken);
+			}
+			catch (SecurityTokenException)
+			{
+				return Unauthorized(new { error = "Invalid refresh token" });
+			}
 
 			if (!principal.HasClaim(c => c.Type == "tokenType" && c.Value == "refreshToken"))
-				return Unauthorized(new { error = "Invalid or expired refresh token" });
+				return Unauthorized(new { error = "Invalid refresh token" });
 
-			if (oldToken == null || oldToken.ExpiresAt < DateTime.UtcNow)
-				return Unauthorized(new { error = "Invalid or expired refresh token" });
-
-			oldToken.IsRevoked = true;
-
-			var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
+			// 3) Создаём новый access token всегда
 			var jwt = _tokenService.CreateJwtToken(oldToken.User);
+
+			// 4) По умолчанию возвращаем текущий refresh token (не NULL)
+			string refreshToReturn = oldToken.Token;
+
+			// 5) Если до истечения осталось мало времени — обновляем refresh token
+			if (oldToken.ExpiresAt - DateTime.UtcNow < RefreshTokenRenewalThreshold)
+			{
+				// отзываем старый и создаём новый
+				oldToken.IsRevoked = true;
+				var newRefreshToken = await _tokenService.CreateRefreshTokenAsync(oldToken.User);
+
+				// предполагаем, что CreateRefreshTokenAsync сохраняет новый токен в БД
+				refreshToReturn = newRefreshToken;
+			}
 
 			await _context.SaveChangesAsync();
 
 			return Ok(new AuthResponseDto
 			{
 				AccessToken = jwt,
-				RefreshToken = newRefreshToken,
+				RefreshToken = refreshToReturn,
 				User = new
 				{
 					id = oldToken.User.Id,

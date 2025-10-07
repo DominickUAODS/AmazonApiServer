@@ -1,5 +1,4 @@
 ﻿using AmazonApiServer.Enums;
-using AmazonApiServer.Models;
 using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.DTOs.Category
@@ -20,6 +19,6 @@ namespace AmazonApiServer.DTOs.Category
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Guid? ParentId { get; set; }
         [JsonPropertyName("property_keys")]
-        public List<PropertyKey>? PropertyKeys { get; set; }
+        public List<PropertyKeyDto>? PropertyKeys { get; set; }
     }
 }

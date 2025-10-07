@@ -20,9 +20,9 @@ namespace AmazonApiServer.DTOs.Product
         public int Number { get; set; }
         [JsonPropertyName("displays")]
         public List<string>? Displays { get; set; }
-        [JsonPropertyName("product_details")]
+        [JsonPropertyName("details")]
         public List<ProductDetailDto>? ProductDetails { get; set; }
-        [JsonPropertyName("product_features")]
+        [JsonPropertyName("features")]
         public List<ProductFeatureDto>? ProductFeatures { get; set; }
     }
 }

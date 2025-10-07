@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,9 +20,9 @@ namespace AmazonApiServer.Controllers
 
 		[HttpGet]
 		[Authorize(Roles = "Administrator")]
-		public async Task<IActionResult> GetAllUsers()
+		public async Task<IActionResult> GetAllUsers([FromQuery] UsersFilter filter)
 		{
-			var result = await _users.GetAllUsersAsync();
+			var result = await _users.GetAllUsersAsync(filter);
 			return Ok(result);
 		}
 
@@ -95,7 +96,7 @@ namespace AmazonApiServer.Controllers
 
 		[HttpGet("search")]
 		[Authorize(Roles = "Administrator")]
-		public async Task<IActionResult> SearchUsers([FromQuery] string query, [FromQuery] string? role)
+		public async Task<IActionResult> SearchUsers([FromQuery] string? query, [FromQuery] string? role)
 		{
 			var users = await _users.SearchUsersAsync(query, role);
 			return Ok(users);

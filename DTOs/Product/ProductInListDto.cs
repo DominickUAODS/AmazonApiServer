@@ -13,9 +13,9 @@ namespace AmazonApiServer.DTOs.Product
 		[JsonPropertyName("discount")]
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public int? Discount { get; set; }
-		[JsonPropertyName("display")]
+		[JsonPropertyName("displays")]
 		public required string Display { get; set; }
-		[JsonPropertyName("rating")]
+		[JsonPropertyName("stars")]
 		[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public double? Rating { get; set; }
 		[JsonPropertyName("comments")]

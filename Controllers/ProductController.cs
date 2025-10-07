@@ -42,6 +42,7 @@ namespace AmazonApiServer.Controllers
 			}
 			ProductDto productDto = new()
 			{
+				Id = product.Id,
 				Name = product.Name,
 				Code = product.Code,
 				CategoryId = product.CategoryId,
@@ -59,7 +60,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> CreateAsync([FromForm] AddProductDto productDto)
+		public async Task<IActionResult> CreateAsync([FromBody] AddProductDto productDto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -67,15 +68,16 @@ namespace AmazonApiServer.Controllers
 			}
 			Product product = new()
 			{
+				Id = Guid.NewGuid(),
 				Name = productDto.Name,
 				Code = productDto.Code,
 				CategoryId = productDto.CategoryId,
 				Price = productDto.Price,
 				Discount = productDto.Discount,
 				Number = productDto.Number,
-				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? new(),
-				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
-				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList() ?? new(),
+				Displays = productDto.Displays?.Select(p => new ProductDisplay { Id = Guid.NewGuid(), Image = p }).ToList() ?? new(),
+				Details = productDto.ProductDetails?.Select(d => new ProductDetail { Id = Guid.NewGuid(), PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
+				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Id = Guid.NewGuid(), Name = f.Name, Description = f.Description }).ToList() ?? new(),
 			};
 			Product created;
 			try
@@ -90,8 +92,7 @@ namespace AmazonApiServer.Controllers
 		}
 
 		[HttpPut("{id}")]
-		[Consumes("multipart/form-data")]
-		public async Task<IActionResult> EditAsync(Guid id, [FromForm] EditProductDto productDto)
+		public async Task<IActionResult> EditAsync(Guid id, [FromBody] EditProductDto productDto)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -106,9 +107,9 @@ namespace AmazonApiServer.Controllers
 				Price = productDto.Price,
 				Discount = productDto.Discount,
 				Number = productDto.Number,
-				Displays = productDto.Displays?.Select(p => new ProductDisplay { Image = p }).ToList() ?? new(),
-				Details = productDto.ProductDetails?.Select(d => new ProductDetail { PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
-				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Name = f.Name, Description = f.Description }).ToList() ?? new()
+				Displays = productDto.Displays?.Select(p => new ProductDisplay { Id = Guid.NewGuid(), Image = p }).ToList() ?? new(),
+				Details = productDto.ProductDetails?.Select(d => new ProductDetail { Id = Guid.NewGuid(), PropertyKeyId = d.PropertyKeyId, Attribute = d.Attribute }).ToList() ?? new(),
+				Features = productDto.ProductFeatures?.Select(f => new ProductFeature { Id = Guid.NewGuid(), Name = f.Name, Description = f.Description }).ToList() ?? new()
 			};
 			Product? result;
 			try

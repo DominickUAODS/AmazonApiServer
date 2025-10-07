@@ -1,12 +1,10 @@
 ﻿using AmazonApiServer.Data;
-using AmazonApiServer.DTOs.Product;
 using AmazonApiServer.DTOs.User;
 using AmazonApiServer.Extensions;
+using AmazonApiServer.Filters;
 using AmazonApiServer.Interfaces;
 using AmazonApiServer.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace AmazonApiServer.Repositories
 {
@@ -19,15 +17,48 @@ namespace AmazonApiServer.Repositories
 			_context = context;
 		}
 
-		public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+		public async Task<IEnumerable<UserDto>> GetAllUsersAsync(UsersFilter filter)
 		{
-			var users = await _context.Users
+			// Базовый запрос с необходимыми Include
+			var query = _context.Users
 				.Include(u => u.Role)
 				.Include(u => u.Orders)
 				.Include(u => u.Wishlist)
 				.Include(u => u.Reviews)
 				.Include(u => u.ReviewReviews)
-				.ToListAsync();
+				.AsQueryable();
+
+			// Фильтр по ID пользователя (если задан)
+			if (filter.UserId.HasValue)
+			{
+				query = query.Where(u => u.Id == filter.UserId.Value);
+			}
+
+			// Фильтр по поиску (имя, фамилия, email)
+			if (!string.IsNullOrWhiteSpace(filter.Search))
+			{
+				var searchLower = filter.Search.ToLower();
+				query = query.Where(u =>
+					u.FirstName.ToLower().Contains(searchLower) ||
+					u.LastName.ToLower().Contains(searchLower) ||
+					u.Email.ToLower().Contains(searchLower)
+				);
+			}
+
+			// Фильтр по роли
+			if (!string.IsNullOrWhiteSpace(filter.Role))
+			{
+				query = query.Where(u => u.Role != null && u.Role.Name == filter.Role);
+			}
+
+			// Сортировка
+			query = query.OrderBy(u => u.FirstName);
+
+			// Пагинация, пока отключил нужно менять логику выдачи json на вид что + какая страница + общее количество страниц
+			// int skip = (filter.Page - 1) * filter.PageSize;
+			// query = query.Skip(skip).Take(filter.PageSize);
+
+			var users = await query.ToListAsync();
 
 			return users.Select(u => u.ToDto());
 		}
@@ -121,7 +152,7 @@ namespace AmazonApiServer.Repositories
 			return user.ToDto();
 		}
 
-		public async Task<IEnumerable<UserDto>> SearchUsersAsync(string query, string? roleName)
+		public async Task<IEnumerable<UserDto>> SearchUsersAsync(string? query, string? roleName)
 		{
 			var usersQuery = _context.Users.Include(u => u.Role).AsQueryable();
 

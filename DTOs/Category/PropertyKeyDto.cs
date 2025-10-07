@@ -4,9 +4,9 @@ namespace AmazonApiServer.DTOs.Category
 {
 	public class PropertyKeyDto
 	{
-		[JsonPropertyName("id")]
+		[JsonPropertyName("property_key_id")]
 		public Guid Id { get; set; }
-		[JsonPropertyName("name")]
+		[JsonPropertyName("property_key")]
 		public string Name { get; set; } = string.Empty;
 	}
 }

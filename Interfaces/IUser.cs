@@ -1,10 +1,11 @@
 ﻿using AmazonApiServer.DTOs.User;
+using AmazonApiServer.Filters;
 
 namespace AmazonApiServer.Interfaces
 {
 	public interface IUser
 	{
-		Task<IEnumerable<UserDto>> GetAllUsersAsync();
+		Task<IEnumerable<UserDto>> GetAllUsersAsync(UsersFilter filter);
 		Task<UserDto?> GetUserByIdAsync(Guid id);
 		Task<UserDto?> AddUserAsync(UserCreateDto dto);
 		Task<UserDto?> UpdateUserAsync(UserUpdateDto dto, Guid currentUserId);

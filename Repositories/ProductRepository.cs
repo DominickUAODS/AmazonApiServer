@@ -13,38 +13,136 @@ namespace AmazonApiServer.Repositories
 		public async Task<Product> CreateAsync(Product product)
 		{
 			await _context.Products.AddAsync(product);
+			if (product.Displays != null)
+			{
+				foreach (var display in product.Displays)
+				{
+					display.Product = product;
+					await _context.ProductDisplays.AddAsync(display);
+				}
+			}
+
+			if (product.Details != null)
+			{
+				foreach (var detail in product.Details)
+				{
+					detail.Product = product;
+					await _context.ProductDetails.AddAsync(detail);
+				}
+			}
+
+			if (product.Features != null)
+			{
+				foreach (var feature in product.Features)
+				{
+					feature.Product = product;
+					await _context.ProductFeatures.AddAsync(feature);
+				}
+			}
 			await _context.SaveChangesAsync();
+
 			return product; // todo maybe include foreign keys for debug purposes
 		}
 
 		public async Task<Product?> DeleteAsync(Guid productId)
 		{
-			Product? product = await _context.Products.FirstOrDefaultAsync(c => c.Id == productId);
-			if (product is not null)
-			{
-				_context.Products.Remove(product);
-				await _context.SaveChangesAsync();
-			}
-			return product; // todo maybe include foreign keys for debug purposes
+			//Product? product = await _context.Products.FirstOrDefaultAsync(c => c.Id == productId);
+			//if (product is not null)
+			//{
+			//	_context.Products.Remove(product);
+			//	await _context.SaveChangesAsync();
+			//}
+			//return product; // todo maybe include foreign keys for debug purposes
+			var product = await _context.Products
+				.Include(p => p.Displays)
+				.Include(p => p.Details)
+				.Include(p => p.Features)
+				.FirstOrDefaultAsync(c => c.Id == productId);
+
+			if (product is null)
+				return null;
+
+			// Удаляем связанные коллекции
+			_context.ProductDisplays.RemoveRange(product.Displays);
+			_context.ProductDetails.RemoveRange(product.Details);
+			_context.ProductFeatures.RemoveRange(product.Features);
+
+			// Удаляем сам продукт
+			_context.Products.Remove(product);
+
+			await _context.SaveChangesAsync();
+			return product;
 		}
 
 		public async Task<Product?> EditAsync(Product product)
 		{
-			Product? existingProduct = await _context.Products.FirstOrDefaultAsync(c => c.Id == product.Id);
-			if (existingProduct is not null)
+			//Product? existingProduct = await _context.Products.FirstOrDefaultAsync(c => c.Id == product.Id);
+			//if (existingProduct is not null)
+			//{
+			//	existingProduct.Name = product.Name;
+			//	existingProduct.Code = product.Code;
+			//	existingProduct.CategoryId = product.CategoryId;
+			//	existingProduct.Price = product.Price;
+			//	existingProduct.Discount = product.Discount;
+			//	existingProduct.Number = product.Number;
+			//	existingProduct.Displays = product.Displays;
+			//	existingProduct.Details = product.Details;
+			//	existingProduct.Features = product.Features;
+			//	await _context.SaveChangesAsync();
+			//}
+			//return existingProduct; // todo maybe include foreign keys for debug purposes
+
+			var existingProduct = await _context.Products
+				.Include(p => p.Displays)
+				.Include(p => p.Details)
+				.Include(p => p.Features)
+				.FirstOrDefaultAsync(c => c.Id == product.Id);
+
+			if (existingProduct is null)
+				return null;
+
+		
+			existingProduct.Name = product.Name;
+			existingProduct.Code = product.Code;
+			existingProduct.CategoryId = product.CategoryId;
+			existingProduct.Price = product.Price;
+			existingProduct.Discount = product.Discount;
+			existingProduct.Number = product.Number;
+
+			_context.ProductDisplays.RemoveRange(existingProduct.Displays);
+			_context.ProductDetails.RemoveRange(existingProduct.Details);
+			_context.ProductFeatures.RemoveRange(existingProduct.Features);
+
+			if (product.Displays != null)
 			{
-				existingProduct.Name = product.Name;
-				existingProduct.Code = product.Code;
-				existingProduct.CategoryId = product.CategoryId;
-				existingProduct.Price = product.Price;
-				existingProduct.Discount = product.Discount;
-				existingProduct.Number = product.Number;
-				existingProduct.Displays = product.Displays;
-				existingProduct.Details = product.Details;
-				existingProduct.Features = product.Features;
-				await _context.SaveChangesAsync();
+				foreach (var display in product.Displays)
+				{
+					display.Product = existingProduct;
+					await _context.ProductDisplays.AddAsync(display);
+				}
 			}
-			return existingProduct; // todo maybe include foreign keys for debug purposes
+
+			if (product.Details != null)
+			{
+				foreach (var detail in product.Details)
+				{
+					detail.Product = existingProduct;
+					await _context.ProductDetails.AddAsync(detail);
+				}
+			}
+
+			if (product.Features != null)
+			{
+				foreach (var feature in product.Features)
+				{
+					feature.Product = existingProduct;
+					await _context.ProductFeatures.AddAsync(feature);
+				}
+			}
+
+			await _context.SaveChangesAsync();
+
+			return existingProduct;
 		}
 
 		public async Task<List<Product>> GetAllAsync(ProductsFilter filter)

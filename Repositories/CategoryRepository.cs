@@ -31,19 +31,50 @@ namespace AmazonApiServer.Repositories
 
 		public async Task<Category?> EditAsync(Category category)
 		{
-			Category? existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Id == category.Id);
-			if (existingCategory is not null)
+			//Category? existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Id == category.Id);
+			//if (existingCategory is not null)
+			//{
+			//	existingCategory.Image = category.Image;
+			//	existingCategory.Name = category.Name;
+			//	existingCategory.Description = category.Description;
+			//	existingCategory.Icon = category.Icon;
+			//	existingCategory.IsActive = category.IsActive;
+			//	existingCategory.ParentId = category.ParentId;
+			//	existingCategory.PropertyKeys = category.PropertyKeys;
+			//	await _context.SaveChangesAsync();
+			//}
+			//return existingCategory; // todo maybe include foreign keys for debug purposes
+
+			var existingCategory = await _context.Categories
+				.Include(c => c.PropertyKeys) // загружаем дочерние элементы
+				.FirstOrDefaultAsync(c => c.Id == category.Id);
+
+			if (existingCategory is null)
+				return null;
+
+			// обновляем основные поля
+			existingCategory.Image = category.Image;
+			existingCategory.Name = category.Name;
+			existingCategory.Description = category.Description;
+			existingCategory.Icon = category.Icon;
+			existingCategory.IsActive = category.IsActive;
+			existingCategory.ParentId = category.ParentId;
+
+			// удаляем все старые PropertyKeys
+			_context.PropertyKeys.RemoveRange(existingCategory.PropertyKeys);
+
+			// добавляем новые, если есть
+			if (category.PropertyKeys != null && category.PropertyKeys.Any())
 			{
-				existingCategory.Image = category.Image;
-				existingCategory.Name = category.Name;
-				existingCategory.Description = category.Description;
-				existingCategory.Icon = category.Icon;
-				existingCategory.IsActive = category.IsActive;
-				existingCategory.ParentId = category.ParentId;
-				existingCategory.PropertyKeys = category.PropertyKeys;
-				await _context.SaveChangesAsync();
+				var newKeys = category.PropertyKeys
+					.Select(pk => new PropertyKey { Name = pk.Name, CategoryId = existingCategory.Id })
+					.ToList();
+
+				existingCategory.PropertyKeys = newKeys;
 			}
-			return existingCategory; // todo maybe include foreign keys for debug purposes
+
+			await _context.SaveChangesAsync();
+			return existingCategory;
 		}
 
 		public async Task<List<Category>> GetAllAsync(CategoriesFilter filter)
