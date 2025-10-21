@@ -185,7 +185,6 @@ namespace AmazonApiServer.Repositories
 			}
 
 			query = query.Include(e => e.Displays);
-			//return await query.ToListAsync();
 
 			int skip = (filter.Page - 1) * filter.PageSize;
 			return await query.Skip(skip).Take(filter.PageSize).ToListAsync();

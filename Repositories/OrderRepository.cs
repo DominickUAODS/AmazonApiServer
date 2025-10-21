@@ -85,7 +85,9 @@ namespace AmazonApiServer.Repositories
 					Id = o.DeliveryAddress.Id,
 					CountryId = o.DeliveryAddress.CountryId,
 					CountryName = o.DeliveryAddress.Country.Name,
+					CountryStr = o.DeliveryAddress.CountryStr,
 					StateId = o.DeliveryAddress.StateId,
+					StateStr = o.DeliveryAddress.StateStr,
 					StateName = o.DeliveryAddress.State != null ? o.DeliveryAddress.State.Name : null,
 					City = o.DeliveryAddress.City,
 					Postcode = o.DeliveryAddress.Postcode
@@ -109,7 +111,9 @@ namespace AmazonApiServer.Repositories
 			{
 				Id = Guid.NewGuid(),
 				CountryId = dto.Address.CountryId,
+				CountryStr = dto.Address.CountryStr,
 				StateId = dto.Address.StateId,
+				StateStr = dto.Address.StateStr,
 				City = dto.Address.City,
 				Postcode = dto.Address.Postcode
 			};
@@ -164,7 +168,9 @@ namespace AmazonApiServer.Repositories
 			if (order.DeliveryAddress != null && dto.Address != null)
 			{
 				order.DeliveryAddress.CountryId = dto.Address.CountryId;
+				order.DeliveryAddress.CountryStr = dto.Address.CountryStr;
 				order.DeliveryAddress.StateId = dto.Address.StateId;
+				order.DeliveryAddress.StateStr = dto.Address.StateStr;
 				order.DeliveryAddress.City = dto.Address.City;
 				order.DeliveryAddress.Postcode = dto.Address.Postcode;
 			}
@@ -244,6 +250,5 @@ namespace AmazonApiServer.Repositories
 				//}).ToList()
 			});
 		}
-
 	}
 }
