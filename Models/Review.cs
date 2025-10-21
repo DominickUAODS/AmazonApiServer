@@ -6,9 +6,11 @@ namespace AmazonApiServer.Models
     {
         [JsonPropertyName("id")]
         public Guid Id { get; set; }
+        public Guid ProductId { get; set; }
         [JsonPropertyName("product")]
         public Product? Product { get; set; }
-        [JsonPropertyName("user")]
+		public Guid UserId { get; set; }
+		[JsonPropertyName("user")]
         public User? User { get; set; }
         [JsonPropertyName("stars")]
         public int Stars { get; set; }
@@ -17,12 +19,12 @@ namespace AmazonApiServer.Models
         [JsonPropertyName("content")]
         public required string Content { get; set; }
         [JsonPropertyName("published")]
-        public DateOnly Published { get; set; }
+        public DateTime Published { get; set; }
         [JsonPropertyName("rewiew_reviews")]
-        public List<ReviewReview>? ReviewReviews { get; set; }
-        [JsonPropertyName("rewiew_tags")]
-        public List<ReviewTag>? ReviewTags { get; set; }
-        [JsonPropertyName("rewiew_images")]
-        public List<ReviewImage>? ReviewImages { get; set; }
-    }
+        public ICollection<ReviewReview>? ReviewReviews { get; set; } = new List<ReviewReview>();
+		[JsonPropertyName("rewiew_tags")]
+        public ICollection<ReviewTag>? ReviewTags { get; set; } = new List<ReviewTag>();
+		[JsonPropertyName("rewiew_images")]
+        public ICollection<ReviewImage>? ReviewImages { get; set; } = new List<ReviewImage>();
+	}
 }

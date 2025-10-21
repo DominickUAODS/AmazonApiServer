@@ -8,7 +8,10 @@ namespace AmazonApiServer.Models
         public Guid Id { get; set; }
         [JsonPropertyName("name")]
         public required string Name { get; set; }
-        [JsonPropertyName("category")]
+		public Guid? CategoryId { get; set; }
+		[JsonPropertyName("category")]
         public Category? Category { get; set; }
-    }
+		[JsonIgnore]
+		public List<ProductDetail>? ProductDetails { get; set; }
+	}
 }

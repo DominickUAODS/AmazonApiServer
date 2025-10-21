@@ -1,14 +1,19 @@
-﻿using System.Text.Json.Serialization;
+﻿using AmazonApiServer.Enums;
+using System.Text.Json.Serialization;
 
 namespace AmazonApiServer.Models
 {
-    public class ReviewTag
-    {
-        [JsonPropertyName("id")]
-        public Guid Id { get; set; }
-        [JsonPropertyName("review")]
-        public Review? Review { get; set; }
-        [JsonPropertyName("tag")]
-        public Enums.ReviewTag Tag { get; set; }
-    }
+	public class ReviewTag
+	{
+		[JsonPropertyName("id")]
+		public Guid Id { get; set; }
+
+		[JsonPropertyName("review")]
+		public Review? Review { get; set; }
+
+		public Guid ReviewId { get; set; }
+
+		[JsonPropertyName("tag")]
+		public ProductReviewTag Tag { get; set; }
+	}
 }
