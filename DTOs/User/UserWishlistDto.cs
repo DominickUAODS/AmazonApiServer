@@ -6,16 +6,16 @@ namespace AmazonApiServer.DTOs.User
 	{
 		[JsonPropertyName("id")]
 		public Guid Id { get; set; }
-		[JsonPropertyName("title")]
+		[JsonPropertyName("name")]
 		public string Name { get; set; } = string.Empty;
 
-		[JsonPropertyName("image")]
+		[JsonPropertyName("display")]
 		public string Image { get; set; } = string.Empty;
 		
-		[JsonPropertyName("reviews")]
+		[JsonPropertyName("comments")]
 		public int Reviews { get; set; }
 
-		[JsonPropertyName("rating")]
+		[JsonPropertyName("stars")]
 		public int Rating { get; set; }
 		
 		[JsonPropertyName("price")]
@@ -24,7 +24,7 @@ namespace AmazonApiServer.DTOs.User
 		[JsonPropertyName("discount")]
 		public int? Discount { get; set; }
 		
-		[JsonPropertyName("old_price")]
+		[JsonPropertyName("old_cost")]
 		public decimal? OldPrice { get; set; }
 	}
 }

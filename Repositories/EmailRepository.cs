@@ -23,17 +23,38 @@ public class EmailRepository : IEmail
 		var fromEmail = _config["Email:From"]!;
 		var fromName = _config["Email:FromName"] ?? "Support";
 
-		// Загружаем HTML-шаблон
-		var templatePath = Path.Combine("Templates", "CodeEmail.html");
-		if (!File.Exists(templatePath))
-		{
-			_logger.LogError("Email template not found: {path}", templatePath);
-			throw new FileNotFoundException("Email template not found.", templatePath);
-		}
+		//// Загружаем HTML-шаблон
+		//var templatePath = Path.Combine("Templates", "CodeEmail.html");
+		//if (!File.Exists(templatePath))
+		//{
+		//	_logger.LogError("Email template not found: {path}", templatePath);
+		//	throw new FileNotFoundException("Email template not found.", templatePath);
+		//}
 
-		var html = await File.ReadAllTextAsync(templatePath);
+		//var html = await File.ReadAllTextAsync(templatePath);
 
-		html = html
+		//html = html
+
+		// HTML-шаблон письма (встроенный)
+		var htmlTemplate = @"
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<meta charset='UTF-8'>
+				<title>{{TITLE}}</title>
+			</head>
+			<body style='font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px;'>
+				<div style='max-width: 600px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);'>
+					<h2 style='color: #333; margin-bottom: 10px;'>{{TITLE}}</h2>
+					<p style='color: #555; font-size: 16px;'>{{SUBTITLE}}</p>
+					<h1 style='color: #3498db; text-align: center; font-size: 36px; letter-spacing: 4px;'>{{CODE}}</h1>
+					<p style='color: #888; font-size: 14px; text-align: center;'>This code is valid for 10 minutes.</p>
+				</div>
+			</body>
+			</html>";
+
+		// Подставляем значения
+		var html = htmlTemplate
 			.Replace("{{TITLE}}", title)
 			.Replace("{{SUBTITLE}}", subtitle)
 			.Replace("{{CODE}}", code);
