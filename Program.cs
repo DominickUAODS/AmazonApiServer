@@ -23,7 +23,7 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
 
 builder.Services.AddCors(options => options.AddPolicy("corspolicy", build =>
 {
-	build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+	build.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
 }));
 
 builder.Services.AddScoped<IToken, TokenRepository>();
