@@ -87,9 +87,10 @@ public class EmailRepository : IEmail
 	public async Task SendConfirmationCodeAsync(string email, string code, string title, string subtitle)
 	{
 		var apiKey = _config["SendGrid:ApiKey"];
+		_logger.LogInformation("SendGrid API key length: {len}", apiKey?.Length ?? 0);
 		var client = new SendGridClient(apiKey);
 
-		var from = new EmailAddress("support@yourdomain.com", "Support");
+		var from = new EmailAddress("vladimir.demch@gmail.com", "Support");
 		var subject = title;
 		var to = new EmailAddress(email);
 		var plainText = $"Your confirmation code is: {code}";
@@ -120,6 +121,9 @@ public class EmailRepository : IEmail
 
 		var msg = MailHelper.CreateSingleEmail(from, to, subject, plainText, html);
 		var response = await client.SendEmailAsync(msg);
+
+		var body = await response.Body.ReadAsStringAsync();
+		_logger.LogError("SendGrid response body: {body}", body);
 
 		_logger.LogInformation("SendGrid response: {status}", response.StatusCode);
 	}
